@@ -9,7 +9,6 @@ import {
 import {
   createTransaction,
   deleteTransaction,
-  getDailyTotals,
   getLatestTransactionsByUser,
   getMonthActivity,
   getTransactionById,
@@ -19,44 +18,6 @@ import {
 import { getSummaryData } from "./summaryService.js";
 import { compactDate, compactTime, formatMoney } from "../utils/format.js";
 import { dayjs, getUzbekMonthLabel, getUzbekWeekdays, monthBounds, parseDateInput } from "../utils/dates.js";
-
-function buildHourlyTimeline(entries) {
-  const grouped = new Map();
-
-  for (const entry of entries) {
-    const hourKey = String(entry.transaction_time || "12:00").slice(0, 2);
-    if (!grouped.has(hourKey)) {
-      grouped.set(hourKey, []);
-    }
-    grouped.get(hourKey).push(entry);
-  }
-
-  return Array.from({ length: 24 }, (_, hour) => {
-    const hourKey = String(hour).padStart(2, "0");
-    return {
-      label: `${hourKey}:00`,
-      entries: grouped.get(hourKey) || []
-    };
-  });
-}
-
-function buildCategoryBreakdown(entries) {
-  const totals = new Map();
-  let grandTotal = 0;
-
-  for (const entry of entries) {
-    grandTotal += Number(entry.amount);
-    totals.set(entry.category, (totals.get(entry.category) || 0) + Number(entry.amount));
-  }
-
-  return [...totals.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .map(([category, amount]) => ({
-      category,
-      amount,
-      percent: grandTotal > 0 ? Math.round((amount / grandTotal) * 100) : 0
-    }));
-}
 
 export function isAdminUsername(username) {
   return Boolean(username && username.toLowerCase() === config.adminTelegramUsername);
@@ -97,6 +58,17 @@ export function resolveDashboardUser({ userId, telegramUserId, firstName, userna
   });
 }
 
+function buildDraftEntry({ editEntry, draftType, draftAmount, draftCategory, draftNote, defaultTime, selectedDate }) {
+  return {
+    type: draftType || editEntry?.type || "expense",
+    amount: draftAmount || editEntry?.amount || "",
+    category: draftCategory || editEntry?.category || "",
+    note: draftNote || editEntry?.note || "",
+    transactionDate: editEntry?.transaction_date || selectedDate,
+    transactionTime: editEntry?.transaction_time || defaultTime
+  };
+}
+
 export function buildDashboardViewModel({
   user,
   monthText,
@@ -106,7 +78,11 @@ export function buildDashboardViewModel({
   viewMode,
   telegramUserId,
   telegramName,
-  telegramUsername
+  telegramUsername,
+  draftType,
+  draftAmount,
+  draftCategory,
+  draftNote
 }) {
   const now = dayjs().tz(user.timezone);
   const activeDate = parseDateInput(selectedDate || compactDate(now), user.timezone) || now.startOf("day");
@@ -114,10 +90,10 @@ export function buildDashboardViewModel({
   const monthData = monthBounds(month, user.timezone);
   const activity = getMonthActivity(user.id, compactDate(monthData.start), compactDate(monthData.end));
   const entries = getTransactionsByDate(user.id, compactDate(activeDate));
-  const dailyTotals = getDailyTotals(user.id, compactDate(activeDate));
   const monthSummary = getSummaryData(user.id, "month", user.timezone, user.currency || "UZS");
   const editEntry = editEntryId ? getTransactionById(Number(editEntryId), user.id) : null;
   const activityMap = new Map(activity.map((item) => [item.transaction_date, item]));
+  const defaultTime = compactTime(now);
 
   const firstWeekday = (Number(monthData.start.format("d")) + 6) % 7;
   const daysInMonth = monthData.end.date();
@@ -156,10 +132,6 @@ export function buildDashboardViewModel({
     weeks.push(row);
   }
 
-  const expenseEntries = entries.filter((entry) => entry.type === "expense");
-  const incomeEntries = entries.filter((entry) => entry.type === "income");
-  const debtEntries = entries.filter((entry) => entry.type === "debt");
-
   return {
     viewMode: viewMode === "month" ? "month" : "today",
     flashMessage,
@@ -174,21 +146,23 @@ export function buildDashboardViewModel({
     calendarWeeks: weeks,
     weekdayLabels: getUzbekWeekdays(),
     entries,
-    hourlyTimeline: buildHourlyTimeline(entries),
-    dailyTotals,
     monthSummary,
-    categoryBreakdown: buildCategoryBreakdown(expenseEntries),
     editEntry,
+    draftEntry: buildDraftEntry({
+      editEntry,
+      draftType,
+      draftAmount,
+      draftCategory,
+      draftNote,
+      defaultTime,
+      selectedDate: compactDate(activeDate)
+    }),
     isAdmin: isAdminUsername(telegramUsername || user.username),
     telegramUserId: telegramUserId || user.telegram_id,
     telegramName: telegramName || user.first_name || "Mening hisobim",
     telegramUsername: telegramUsername || user.username || "",
     todayDate: compactDate(now),
-    defaultTime: editEntry?.transaction_time || compactTime(now),
-    expenseEntriesCount: expenseEntries.length,
-    incomeEntriesCount: incomeEntries.length,
-    debtEntriesCount: debtEntries.length,
-    balance: Number(dailyTotals.income_total) - Number(dailyTotals.expense_total) - Number(dailyTotals.debt_total),
+    defaultTime,
     currencies: ["UZS", "USD", "KRW", "RUB", "EUR"],
     formatMoney: (amount) => formatMoney(amount, user.currency || "UZS")
   };

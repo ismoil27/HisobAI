@@ -15,6 +15,15 @@ import {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+function dashboardDraftFromRequest(source) {
+  return {
+    draftType: source.type || "",
+    draftAmount: source.amount || "",
+    draftCategory: source.category || "",
+    draftNote: source.note || ""
+  };
+}
+
 export function createServer() {
   const app = express();
 
@@ -40,7 +49,11 @@ export function createServer() {
       viewMode: req.query.view,
       telegramUserId: req.query.tgUserId,
       telegramName: req.query.tgName,
-      telegramUsername: req.query.tgUsername
+      telegramUsername: req.query.tgUsername,
+      draftType: req.query.type,
+      draftAmount: req.query.amount,
+      draftCategory: req.query.category,
+      draftNote: req.query.note
     });
 
     res.render("dashboard", viewModel);
@@ -89,7 +102,8 @@ export function createServer() {
         viewMode: req.body.view,
         telegramUserId: req.body.tgUserId,
         telegramName: req.body.tgName,
-        telegramUsername: req.body.tgUsername
+        telegramUsername: req.body.tgUsername,
+        ...dashboardDraftFromRequest(req.body)
       });
       res.status(422).render("dashboard", viewModel);
       return;
@@ -152,7 +166,11 @@ export function createServer() {
       message: result.message,
       tgUserId: req.body.tgUserId || "",
       tgName: req.body.tgName || "",
-      tgUsername: req.body.tgUsername || ""
+      tgUsername: req.body.tgUsername || "",
+      type: req.body.type || "",
+      amount: req.body.amount || "",
+      category: req.body.category || "",
+      note: req.body.note || ""
     });
 
     res.redirect(`/?${params.toString()}`);
