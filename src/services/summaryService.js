@@ -57,14 +57,14 @@ export function topCategories(categoryMap, currency) {
     .map(([category, amount]) => `${category}: ${formatMoney(amount, currency)}`);
 }
 
-export function getSummaryData(userId, kind, timezoneName, currency = "UZS") {
+export async function getSummaryData(userId, kind, timezoneName, currency = "UZS") {
   const bounds = summaryBounds(kind, timezoneName);
-  const currentTransactions = getTransactionsForRange(
+  const currentTransactions = await getTransactionsForRange(
     userId,
     compactDate(bounds.current.start),
     compactDate(bounds.current.end)
   );
-  const previousTransactions = getTransactionsForRange(
+  const previousTransactions = await getTransactionsForRange(
     userId,
     compactDate(bounds.previous.start),
     compactDate(bounds.previous.end)
@@ -89,8 +89,8 @@ export function getSummaryData(userId, kind, timezoneName, currency = "UZS") {
   };
 }
 
-export function buildSummaryMessage(userId, kind, timezoneName, currency = "UZS") {
-  const { bounds, current, comparison, categories } = getSummaryData(userId, kind, timezoneName, currency);
+export async function buildSummaryMessage(userId, kind, timezoneName, currency = "UZS") {
+  const { bounds, current, comparison, categories } = await getSummaryData(userId, kind, timezoneName, currency);
 
   const lines = [
     `${bounds.current.label} bo'yicha hisobot`,

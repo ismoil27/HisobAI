@@ -156,8 +156,11 @@ label span,
 .surface-title-wrap p {
   margin: 4px 0 0;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 13px;
   line-height: 1.4;
+  font-family: "Poppins", sans-serif;
+  font-weight: 500;
+  opacity: 0.72;
 }
 
 .compact-title {
@@ -336,7 +339,10 @@ label span,
   background: var(--surface-3);
   color: var(--text);
   padding: 9px 10px;
-  font-size: 16px;
+  font-size: 13px;
+  font-family: "Poppins", sans-serif;
+  font-weight: 500;
+  opacity: 0.82;
 }
 
 .stats-grid {
@@ -468,7 +474,9 @@ label span,
   background: var(--surface-3);
   color: var(--text);
   padding: 9px 10px;
-  font-size: 16px;
+  font-size: 13px;
+  font-family: "Poppins", sans-serif;
+  font-weight: 500;
 }
 
 .entry-form select {
@@ -478,11 +486,23 @@ label span,
   background: var(--surface-3);
   color: var(--text);
   padding: 9px 10px;
-  font-size: 16px;
+  font-size: 13px;
+  font-family: "Poppins", sans-serif;
+  font-weight: 500;
+  opacity: 0.82;
 }
 
 .entry-form select:disabled {
   opacity: 0.6;
+}
+
+.entry-form input::placeholder,
+.category-combo .select-like-input::placeholder {
+  font-family: "Poppins", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(96, 112, 134, 0.72);
+  opacity: 1;
 }
 
 .category-combo {
@@ -496,12 +516,15 @@ label span,
 
 .category-combo .select-like-input {
   cursor: pointer;
-  color: #c8d0dc;
+  color: rgba(19, 32, 51, 0.68);
   caret-color: transparent;
+  font-family: "Poppins", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .category-combo .select-like-input::placeholder {
-  color: #9ba6b5;
+  color: rgba(96, 112, 134, 0.72);
 }
 
 .category-combo .select-like-input:focus {
@@ -1028,7 +1051,7 @@ label span,
   }
 
   .surface-title-wrap p {
-    font-size: 11px;
+    font-size: 13px;
   }
 
   .hero-top {
@@ -1075,7 +1098,7 @@ label span,
   .entry-form input,
   .entry-form select {
     padding: 11px 12px;
-    font-size: 16px;
+    font-size: 13px;
   }
 
   .category-combo input {

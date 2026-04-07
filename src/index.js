@@ -1,6 +1,7 @@
 import { createBot } from "./bot.js";
 import { startSchedulers } from "./scheduler.js";
 import { createServer } from "./server.js";
+import { initializeDatabase } from "./db.js";
 import { mainMenuKeyboard } from "./keyboards/menu.js";
 import { getAllUsers } from "./repositories/userRepository.js";
 import { getWebAppUrl, hasTelegramWebAppUrl } from "./webAppUrl.js";
@@ -16,7 +17,7 @@ async function announceWebAppUrl() {
   }
 
   const webAppUrl = getWebAppUrl();
-  const users = getAllUsers();
+  const users = await getAllUsers();
 
   for (const user of users) {
     try {
@@ -43,6 +44,8 @@ async function announceWebAppUrl() {
 }
 
 async function start() {
+  await initializeDatabase();
+
   server = app.listen(app.get("port"), () => {
     console.log(`Web dashboard is running on port ${app.get("port")}`);
   });

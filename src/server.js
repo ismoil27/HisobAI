@@ -35,153 +35,165 @@ export function createServer() {
 
   app.get("/", async (req, res, next) => {
     try {
-    const user = resolveDashboardUser({
-      userId: req.query.userId,
-      telegramUserId: req.query.tgUserId,
-      firstName: req.query.tgName,
-      username: req.query.tgUsername
-    });
-    const viewModel = await buildDashboardViewModel({
-      user,
-      monthText: req.query.month,
-      selectedDate: req.query.date,
-      flashMessage: req.query.message || "",
-      editEntryId: req.query.editId,
-      viewMode: req.query.view,
-      telegramUserId: req.query.tgUserId,
-      telegramName: req.query.tgName,
-      telegramUsername: req.query.tgUsername,
-      draftType: req.query.type,
-      draftAmount: req.query.amount,
-      draftCategory: req.query.category,
-      draftNote: req.query.note
-    });
+      const user = await resolveDashboardUser({
+        userId: req.query.userId,
+        telegramUserId: req.query.tgUserId,
+        firstName: req.query.tgName,
+        username: req.query.tgUsername
+      });
+      const viewModel = await buildDashboardViewModel({
+        user,
+        monthText: req.query.month,
+        selectedDate: req.query.date,
+        flashMessage: req.query.message || "",
+        editEntryId: req.query.editId,
+        viewMode: req.query.view,
+        telegramUserId: req.query.tgUserId,
+        telegramName: req.query.tgName,
+        telegramUsername: req.query.tgUsername,
+        draftType: req.query.type,
+        draftAmount: req.query.amount,
+        draftCategory: req.query.category,
+        draftNote: req.query.note
+      });
 
-    res.render("dashboard", viewModel);
+      res.render("dashboard", viewModel);
     } catch (error) {
       next(error);
     }
   });
 
-  app.get("/admin", (req, res) => {
-    const username = req.query.tgUsername || "";
-    if (!isAdminUsername(username)) {
-      res.status(403).send("Forbidden");
-      return;
+  app.get("/admin", async (req, res, next) => {
+    try {
+      const username = req.query.tgUsername || "";
+      if (!isAdminUsername(username)) {
+        res.status(403).send("Forbidden");
+        return;
+      }
+
+      const viewModel = await buildAdminViewModel({
+        viewerUsername: username,
+        selectedUserId: req.query.userId
+      });
+
+      res.render("admin", viewModel);
+    } catch (error) {
+      next(error);
     }
-
-    const viewModel = buildAdminViewModel({
-      viewerUsername: username,
-      selectedUserId: req.query.userId
-    });
-
-    res.render("admin", viewModel);
   });
 
   app.post("/entries", async (req, res, next) => {
     try {
-    const user = resolveDashboardUser({
-      userId: req.body.userId,
-      telegramUserId: req.body.tgUserId,
-      firstName: req.body.tgName,
-      username: req.body.tgUsername
-    });
-    const result = saveDashboardTransaction({
-      user,
-      entryId: req.body.entryId,
-      type: req.body.type,
-      amount: req.body.amount,
-      category: req.body.category,
-      note: req.body.note,
-      transactionDate: req.body.transactionDate,
-      transactionTime: req.body.transactionTime
-    });
-
-    if (!result.ok) {
-      const viewModel = await buildDashboardViewModel({
-        user,
-        monthText: req.body.month,
-        selectedDate: req.body.transactionDate,
-        flashMessage: result.message,
-        editEntryId: req.body.entryId,
-        viewMode: req.body.view,
+      const user = await resolveDashboardUser({
+        userId: req.body.userId,
         telegramUserId: req.body.tgUserId,
-        telegramName: req.body.tgName,
-        telegramUsername: req.body.tgUsername,
-        ...dashboardDraftFromRequest(req.body)
+        firstName: req.body.tgName,
+        username: req.body.tgUsername
       });
-      res.status(422).render("dashboard", viewModel);
-      return;
-    }
+      const result = await saveDashboardTransaction({
+        user,
+        entryId: req.body.entryId,
+        type: req.body.type,
+        amount: req.body.amount,
+        category: req.body.category,
+        note: req.body.note,
+        transactionDate: req.body.transactionDate,
+        transactionTime: req.body.transactionTime
+      });
 
-    const params = new URLSearchParams({
-      month: req.body.month,
-      date: result.transactionDate,
-      view: req.body.view || "today",
-      message: result.message,
-      tgUserId: req.body.tgUserId || "",
-      tgName: req.body.tgName || "",
-      tgUsername: req.body.tgUsername || ""
-    });
+      if (!result.ok) {
+        const viewModel = await buildDashboardViewModel({
+          user,
+          monthText: req.body.month,
+          selectedDate: req.body.transactionDate,
+          flashMessage: result.message,
+          editEntryId: req.body.entryId,
+          viewMode: req.body.view,
+          telegramUserId: req.body.tgUserId,
+          telegramName: req.body.tgName,
+          telegramUsername: req.body.tgUsername,
+          ...dashboardDraftFromRequest(req.body)
+        });
+        res.status(422).render("dashboard", viewModel);
+        return;
+      }
 
-    res.redirect(`/?${params.toString()}`);
+      const params = new URLSearchParams({
+        month: req.body.month,
+        date: result.transactionDate,
+        view: req.body.view || "today",
+        message: result.message,
+        tgUserId: req.body.tgUserId || "",
+        tgName: req.body.tgName || "",
+        tgUsername: req.body.tgUsername || ""
+      });
+
+      res.redirect(`/?${params.toString()}`);
     } catch (error) {
       next(error);
     }
   });
 
-  app.post("/entries/:id/delete", (req, res) => {
-    const user = resolveDashboardUser({
-      userId: req.body.userId,
-      telegramUserId: req.body.tgUserId,
-      firstName: req.body.tgName,
-      username: req.body.tgUsername
-    });
-    const result = removeDashboardTransaction({
-      user,
-      entryId: req.params.id
-    });
-    const params = new URLSearchParams({
-      month: req.body.month,
-      date: req.body.date,
-      view: req.body.view || "today",
-      message: result.message,
-      tgUserId: req.body.tgUserId || "",
-      tgName: req.body.tgName || "",
-      tgUsername: req.body.tgUsername || ""
-    });
+  app.post("/entries/:id/delete", async (req, res, next) => {
+    try {
+      const user = await resolveDashboardUser({
+        userId: req.body.userId,
+        telegramUserId: req.body.tgUserId,
+        firstName: req.body.tgName,
+        username: req.body.tgUsername
+      });
+      const result = await removeDashboardTransaction({
+        user,
+        entryId: req.params.id
+      });
+      const params = new URLSearchParams({
+        month: req.body.month,
+        date: req.body.date,
+        view: req.body.view || "today",
+        message: result.message,
+        tgUserId: req.body.tgUserId || "",
+        tgName: req.body.tgName || "",
+        tgUsername: req.body.tgUsername || ""
+      });
 
-    res.redirect(`/?${params.toString()}`);
+      res.redirect(`/?${params.toString()}`);
+    } catch (error) {
+      next(error);
+    }
   });
 
-  app.post("/settings/currency", (req, res) => {
-    const user = resolveDashboardUser({
-      userId: req.body.userId,
-      telegramUserId: req.body.tgUserId,
-      firstName: req.body.tgName,
-      username: req.body.tgUsername
-    });
+  app.post("/settings/currency", async (req, res, next) => {
+    try {
+      const user = await resolveDashboardUser({
+        userId: req.body.userId,
+        telegramUserId: req.body.tgUserId,
+        firstName: req.body.tgName,
+        username: req.body.tgUsername
+      });
 
-    const result = saveDashboardCurrency({
-      user,
-      currency: req.body.currency
-    });
+      const result = await saveDashboardCurrency({
+        user,
+        currency: req.body.currency
+      });
 
-    const params = new URLSearchParams({
-      month: req.body.month,
-      date: req.body.date,
-      view: req.body.view || "today",
-      message: result.message,
-      tgUserId: req.body.tgUserId || "",
-      tgName: req.body.tgName || "",
-      tgUsername: req.body.tgUsername || "",
-      type: req.body.type || "",
-      amount: req.body.amount || "",
-      category: req.body.category || "",
-      note: req.body.note || ""
-    });
+      const params = new URLSearchParams({
+        month: req.body.month,
+        date: req.body.date,
+        view: req.body.view || "today",
+        message: result.message,
+        tgUserId: req.body.tgUserId || "",
+        tgName: req.body.tgName || "",
+        tgUsername: req.body.tgUsername || "",
+        type: req.body.type || "",
+        amount: req.body.amount || "",
+        category: req.body.category || "",
+        note: req.body.note || ""
+      });
 
-    res.redirect(`/?${params.toString()}`);
+      res.redirect(`/?${params.toString()}`);
+    } catch (error) {
+      next(error);
+    }
   });
 
   return app;

@@ -12,7 +12,7 @@ export const config = {
   botToken: BOT_TOKEN,
   defaultTimezone: process.env.DEFAULT_TIMEZONE || "Asia/Seoul",
   port: Number(process.env.PORT || 3000),
-  dbPath: process.env.DB_PATH || (process.env.RAILWAY_ENVIRONMENT ? "/data/hisob.db" : ""),
+  databaseUrl: process.env.DATABASE_URL || process.env.POSTGRES_URL || "",
   webDefaultTelegramId: process.env.WEB_DEFAULT_TELEGRAM_ID || "web-local",
   webDefaultName: process.env.WEB_DEFAULT_NAME || "Local Dashboard",
   telegramWebAppUrl: process.env.TELEGRAM_WEB_APP_URL || "",

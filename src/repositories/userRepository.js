@@ -1,73 +1,88 @@
-import { db } from "../db.js";
+import { query } from "../db.js";
 
-const findByTelegramIdStmt = db.prepare(`
-  SELECT *
-  FROM users
-  WHERE telegram_id = ?
-`);
+export async function getUserByTelegramId(telegramId) {
+  const result = await query(
+    `
+      SELECT *
+      FROM users
+      WHERE telegram_id = $1
+      LIMIT 1
+    `,
+    [String(telegramId)]
+  );
 
-const findByIdStmt = db.prepare(`
-  SELECT *
-  FROM users
-  WHERE id = ?
-`);
-
-const upsertStmt = db.prepare(`
-  INSERT INTO users (telegram_id, chat_id, first_name, username, timezone, currency, updated_at)
-  VALUES (@telegram_id, @chat_id, @first_name, @username, @timezone, @currency, CURRENT_TIMESTAMP)
-  ON CONFLICT(telegram_id)
-  DO UPDATE SET
-    chat_id = excluded.chat_id,
-    first_name = excluded.first_name,
-    username = excluded.username,
-    timezone = excluded.timezone,
-    updated_at = CURRENT_TIMESTAMP
-`);
-
-const updateCurrencyStmt = db.prepare(`
-  UPDATE users
-  SET currency = ?, updated_at = CURRENT_TIMESTAMP
-  WHERE id = ?
-`);
-
-export function upsertUserFromTelegram(from, chatId, timezone) {
-  upsertStmt.run({
-    telegram_id: String(from.id),
-    chat_id: String(chatId),
-    first_name: from.first_name || "",
-    username: from.username || "",
-    timezone,
-    currency: "UZS"
-  });
-
-  return findByTelegramIdStmt.get(String(from.id));
+  return result.rows[0] || null;
 }
 
-export function getUserByTelegramId(telegramId) {
-  return findByTelegramIdStmt.get(String(telegramId));
+export async function getUserById(id) {
+  const result = await query(
+    `
+      SELECT *
+      FROM users
+      WHERE id = $1
+      LIMIT 1
+    `,
+    [Number(id)]
+  );
+
+  return result.rows[0] || null;
 }
 
-export function getUserById(id) {
-  return findByIdStmt.get(id);
+export async function upsertUserFromTelegram(from, chatId, timezone) {
+  const result = await query(
+    `
+      INSERT INTO users (telegram_id, chat_id, first_name, username, timezone, currency, updated_at)
+      VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP)
+      ON CONFLICT (telegram_id)
+      DO UPDATE SET
+        chat_id = EXCLUDED.chat_id,
+        first_name = EXCLUDED.first_name,
+        username = EXCLUDED.username,
+        timezone = EXCLUDED.timezone,
+        updated_at = CURRENT_TIMESTAMP
+      RETURNING *
+    `,
+    [String(from.id), String(chatId), from.first_name || "", from.username || "", timezone, "UZS"]
+  );
+
+  return result.rows[0] || null;
 }
 
-export function ensureWebUser({ telegramId, firstName, username, timezone, currency = "UZS" }) {
-  upsertStmt.run({
-    telegram_id: String(telegramId),
-    chat_id: String(telegramId),
-    first_name: firstName || "",
-    username: username || "",
-    timezone,
-    currency
-  });
+export async function ensureWebUser({ telegramId, firstName, username, timezone, currency = "UZS" }) {
+  const result = await query(
+    `
+      INSERT INTO users (telegram_id, chat_id, first_name, username, timezone, currency, updated_at)
+      VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP)
+      ON CONFLICT (telegram_id)
+      DO UPDATE SET
+        chat_id = EXCLUDED.chat_id,
+        first_name = EXCLUDED.first_name,
+        username = EXCLUDED.username,
+        timezone = EXCLUDED.timezone,
+        updated_at = CURRENT_TIMESTAMP
+      RETURNING *
+    `,
+    [String(telegramId), String(telegramId), firstName || "", username || "", timezone, currency]
+  );
 
-  return findByTelegramIdStmt.get(String(telegramId));
+  return result.rows[0] || null;
 }
 
-export function getAllUsers() {
-  return db.prepare("SELECT * FROM users").all();
+export async function getAllUsers() {
+  const result = await query("SELECT * FROM users ORDER BY id ASC");
+  return result.rows;
 }
 
-export function updateUserCurrency(userId, currency) {
-  return updateCurrencyStmt.run(currency, userId);
+export async function updateUserCurrency(userId, currency) {
+  const result = await query(
+    `
+      UPDATE users
+      SET currency = $1, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $2
+      RETURNING *
+    `,
+    [currency, Number(userId)]
+  );
+
+  return result.rows[0] || null;
 }

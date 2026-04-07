@@ -26,9 +26,9 @@ export function isAdminUsername(username) {
   return Boolean(username && username.toLowerCase() === config.adminTelegramUsername);
 }
 
-export function resolveDashboardUser({ userId, telegramUserId, firstName, username }) {
+export async function resolveDashboardUser({ userId, telegramUserId, firstName, username }) {
   if (telegramUserId) {
-    const existing = getUserByTelegramId(telegramUserId);
+    const existing = await getUserByTelegramId(telegramUserId);
     if (existing) {
       return existing;
     }
@@ -42,13 +42,13 @@ export function resolveDashboardUser({ userId, telegramUserId, firstName, userna
   }
 
   if (userId) {
-    const byId = getUserById(Number(userId));
+    const byId = await getUserById(Number(userId));
     if (byId) {
       return byId;
     }
   }
 
-  const allUsers = getAllUsers();
+  const allUsers = await getAllUsers();
   if (allUsers.length > 0) {
     return allUsers[0];
   }
@@ -91,13 +91,13 @@ export async function buildDashboardViewModel({
   const activeDate = parseDateInput(selectedDate || compactDate(now), user.timezone) || now.startOf("day");
   const month = dayjs.tz(monthText || activeDate.format("YYYY-MM"), "YYYY-MM", user.timezone).startOf("month");
   const monthData = monthBounds(month, user.timezone);
-  const activity = getMonthActivity(user.id, compactDate(monthData.start), compactDate(monthData.end));
-  const entries = getTransactionsByDate(user.id, compactDate(activeDate));
-  const todayEntries = getTransactionsByDate(user.id, compactDate(now));
-  const todayTotals = getDailyTotals(user.id, compactDate(now));
-  const monthSummary = getSummaryData(user.id, "month", user.timezone, user.currency || "UZS");
-  const editEntry = editEntryId ? getTransactionById(Number(editEntryId), user.id) : null;
-  const categoryHistory = getCategoryHistoryByUser(user.id);
+  const activity = await getMonthActivity(user.id, compactDate(monthData.start), compactDate(monthData.end));
+  const entries = await getTransactionsByDate(user.id, compactDate(activeDate));
+  const todayEntries = await getTransactionsByDate(user.id, compactDate(now));
+  const todayTotals = await getDailyTotals(user.id, compactDate(now));
+  const monthSummary = await getSummaryData(user.id, "month", user.timezone, user.currency || "UZS");
+  const editEntry = editEntryId ? await getTransactionById(Number(editEntryId), user.id) : null;
+  const categoryHistory = await getCategoryHistoryByUser(user.id);
   const activityMap = new Map(activity.map((item) => [item.transaction_date, item]));
   const defaultTime = compactTime(now);
 
@@ -191,22 +191,22 @@ export async function buildDashboardViewModel({
   };
 }
 
-export function buildAdminViewModel({ viewerUsername, selectedUserId }) {
-  const users = getAllUsers();
+export async function buildAdminViewModel({ viewerUsername, selectedUserId }) {
+  const users = await getAllUsers();
   const selectedUser =
     users.find((user) => user.id === Number(selectedUserId)) ||
     users[0] ||
     null;
 
-  const userCards = users.map((user) => {
-    const monthSummary = getSummaryData(user.id, "month", user.timezone, user.currency || "UZS");
-    const latestEntries = getLatestTransactionsByUser(user.id, 8);
+  const userCards = await Promise.all(users.map(async (user) => {
+    const monthSummary = await getSummaryData(user.id, "month", user.timezone, user.currency || "UZS");
+    const latestEntries = await getLatestTransactionsByUser(user.id, 8);
     return {
       ...user,
       monthSummary,
       latestEntries
     };
-  });
+  }));
 
   let selectedDetail = null;
   if (selectedUser) {
@@ -222,7 +222,7 @@ export function buildAdminViewModel({ viewerUsername, selectedUserId }) {
   };
 }
 
-export function saveDashboardTransaction({ user, entryId, type, amount, category, note, transactionDate, transactionTime }) {
+export async function saveDashboardTransaction({ user, entryId, type, amount, category, note, transactionDate, transactionTime }) {
   const parsedDate = parseDateInput(transactionDate, user.timezone);
   const numericAmount = Number(amount);
   const fallbackTime = compactTime(dayjs().tz(user.timezone));
@@ -260,7 +260,7 @@ export function saveDashboardTransaction({ user, entryId, type, amount, category
   };
 
   if (entryId) {
-    updateTransaction({
+    await updateTransaction({
       id: Number(entryId),
       ...payload
     });
@@ -271,7 +271,7 @@ export function saveDashboardTransaction({ user, entryId, type, amount, category
     };
   }
 
-  createTransaction(payload);
+  await createTransaction(payload);
   return {
     ok: true,
     message: "Yozuv saqlandi.",
@@ -279,7 +279,7 @@ export function saveDashboardTransaction({ user, entryId, type, amount, category
   };
 }
 
-export function saveDashboardCurrency({ user, currency }) {
+export async function saveDashboardCurrency({ user, currency }) {
   const normalized = String(currency || "").toUpperCase();
   const allowed = new Set(["UZS", "USD", "KRW", "RUB", "EUR"]);
 
@@ -287,15 +287,15 @@ export function saveDashboardCurrency({ user, currency }) {
     return { ok: false, message: "Valyuta noto'g'ri." };
   }
 
-  updateUserCurrency(user.id, normalized);
+  await updateUserCurrency(user.id, normalized);
   return {
     ok: true,
     message: "Valyuta saqlandi."
   };
 }
 
-export function removeDashboardTransaction({ user, entryId }) {
-  deleteTransaction(Number(entryId), user.id);
+export async function removeDashboardTransaction({ user, entryId }) {
+  await deleteTransaction(Number(entryId), user.id);
   return {
     ok: true,
     message: "Yozuv o'chirildi."

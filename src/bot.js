@@ -48,7 +48,7 @@ function createInitialSession() {
   };
 }
 
-function getUserRecord(ctx) {
+async function getUserRecord(ctx) {
   return upsertUserFromTelegram(ctx.from, ctx.chat.id, config.defaultTimezone);
 }
 
@@ -82,7 +82,7 @@ function welcomeCaption() {
 async function showCalendar(ctx, user, monthText) {
   const month = dayjs.tz(monthText, "YYYY-MM", user.timezone).startOf("month");
   const bounds = monthBounds(month, user.timezone);
-  const rows = getMonthActivity(user.id, compactDate(bounds.start), compactDate(bounds.end));
+  const rows = await getMonthActivity(user.id, compactDate(bounds.start), compactDate(bounds.end));
 
   return ctx.reply(
     `Kalendar: ${bounds.label}\n${EXPENSE_SYMBOL} xarajat  ${INCOME_SYMBOL} tushum`,
@@ -121,7 +121,7 @@ export function createBot() {
   bot.use(session({ defaultSession: createInitialSession }));
 
   bot.start(async (ctx) => {
-    getUserRecord(ctx);
+    await getUserRecord(ctx);
     resetAddFlow(ctx);
     await ensureMiniAppMenuButton(ctx);
 
@@ -145,59 +145,59 @@ export function createBot() {
   });
 
   bot.command("menu", async (ctx) => {
-    getUserRecord(ctx);
+    await getUserRecord(ctx);
     await ensureMiniAppMenuButton(ctx);
     await showMainMenu(ctx);
   });
 
   bot.command("dashboard", async (ctx) => {
-    getUserRecord(ctx);
+    await getUserRecord(ctx);
     await ctx.reply(dashboardMessage(), mainMenuKeyboard());
   });
 
   bot.command("add", async (ctx) => {
-    getUserRecord(ctx);
+    await getUserRecord(ctx);
     ctx.session.addEntry = { step: "type" };
     await ctx.reply("Nima qo'shmoqchisiz?", addTypeKeyboard());
   });
 
   bot.command("calendar", async (ctx) => {
-    const user = getUserRecord(ctx);
+    const user = await getUserRecord(ctx);
     await showCalendar(ctx, user, dayjs().tz(user.timezone).format("YYYY-MM"));
   });
 
   bot.command("summary", async (ctx) => {
-    const user = getUserRecord(ctx);
+    const user = await getUserRecord(ctx);
     await ctx.reply(`${user.first_name || "Hisob"} uchun hisobot davrini tanlang:`, summaryKeyboard());
   });
 
   bot.action("menu:add", async (ctx) => {
-    getUserRecord(ctx);
+    await getUserRecord(ctx);
     ctx.session.addEntry = { step: "type" };
     await ctx.answerCbQuery();
     await ctx.reply("Nima qo'shmoqchisiz?", addTypeKeyboard());
   });
 
   bot.action("menu:calendar", async (ctx) => {
-    const user = getUserRecord(ctx);
+    const user = await getUserRecord(ctx);
     await ctx.answerCbQuery();
     await showCalendar(ctx, user, dayjs().tz(user.timezone).format("YYYY-MM"));
   });
 
   bot.action("menu:summary", async (ctx) => {
-    getUserRecord(ctx);
+    await getUserRecord(ctx);
     await ctx.answerCbQuery();
     await ctx.reply("Hisobot davrini tanlang:", summaryKeyboard());
   });
 
   bot.action("menu:home", async (ctx) => {
-    getUserRecord(ctx);
+    await getUserRecord(ctx);
     await ctx.answerCbQuery();
     await showMainMenu(ctx);
   });
 
   bot.action(/^add:type:(expense|income)$/, async (ctx) => {
-    getUserRecord(ctx);
+    await getUserRecord(ctx);
     const type = ctx.match[1];
     ctx.session.addEntry = { step: "amount", type };
     await ctx.answerCbQuery();
@@ -205,7 +205,7 @@ export function createBot() {
   });
 
   bot.action("add:note:skip", async (ctx) => {
-    getUserRecord(ctx);
+    await getUserRecord(ctx);
 
     if (!ctx.session.addEntry || ctx.session.addEntry.step !== "note") {
       await ctx.answerCbQuery("Faol qo'shish jarayoni yo'q.");
@@ -219,7 +219,7 @@ export function createBot() {
   });
 
   bot.action("add:date:today", async (ctx) => {
-    const user = getUserRecord(ctx);
+    const user = await getUserRecord(ctx);
 
     if (!ctx.session.addEntry || ctx.session.addEntry.step !== "date") {
       await ctx.answerCbQuery("Faol qo'shish jarayoni yo'q.");
@@ -227,10 +227,11 @@ export function createBot() {
     }
 
     const now = dayjs().tz(user.timezone);
-    createTransaction({
+    await createTransaction({
       user_id: user.id,
       type: ctx.session.addEntry.type,
       amount: ctx.session.addEntry.amount,
+      transaction_currency: user.currency || "UZS",
       category: ctx.session.addEntry.category,
       note: ctx.session.addEntry.note || "",
       transaction_date: compactDate(now.startOf("day")),
@@ -243,7 +244,7 @@ export function createBot() {
   });
 
   bot.action("add:date:custom", async (ctx) => {
-    getUserRecord(ctx);
+    await getUserRecord(ctx);
 
     if (!ctx.session.addEntry || ctx.session.addEntry.step !== "date") {
       await ctx.answerCbQuery("Faol qo'shish jarayoni yo'q.");
@@ -256,25 +257,25 @@ export function createBot() {
   });
 
   bot.action(/^summary:(week|month)$/, async (ctx) => {
-    const user = getUserRecord(ctx);
+    const user = await getUserRecord(ctx);
     const kind = ctx.match[1];
-    const message = buildSummaryMessage(user.id, kind, user.timezone, user.currency || "UZS");
+    const message = await buildSummaryMessage(user.id, kind, user.timezone, user.currency || "UZS");
     await ctx.answerCbQuery();
     await ctx.reply(message, mainMenuKeyboard());
   });
 
   bot.action(/^calendar:month:(\d{4}-\d{2})$/, async (ctx) => {
-    const user = getUserRecord(ctx);
+    const user = await getUserRecord(ctx);
     const monthText = ctx.match[1];
     await ctx.answerCbQuery();
     await showCalendar(ctx, user, monthText);
   });
 
   bot.action(/^calendar:day:(\d{4}-\d{2}-\d{2}):(\d{4}-\d{2})$/, async (ctx) => {
-    const user = getUserRecord(ctx);
+    const user = await getUserRecord(ctx);
     const date = ctx.match[1];
     const monthText = ctx.match[2];
-    const transactions = getTransactionsByDate(user.id, date);
+    const transactions = await getTransactionsByDate(user.id, date);
     await ctx.answerCbQuery();
     await ctx.reply(
       formatDayTransactions(date, transactions),
@@ -290,7 +291,7 @@ export function createBot() {
   });
 
   bot.on("text", async (ctx) => {
-    const user = getUserRecord(ctx);
+    const user = await getUserRecord(ctx);
     const state = ctx.session.addEntry;
     const text = ctx.message.text.trim();
 
@@ -351,10 +352,11 @@ export function createBot() {
         return;
       }
 
-      createTransaction({
+      await createTransaction({
         user_id: user.id,
         type: state.type,
         amount: state.amount,
+        transaction_currency: user.currency || "UZS",
         category: state.category,
         note: state.note || "",
         transaction_date: compactDate(parsedDate),
