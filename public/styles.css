@@ -501,6 +501,10 @@ label span,
   gap: 6px;
 }
 
+.form-actions > * {
+  flex: 1 1 0;
+}
+
 .primary-btn,
 .secondary-btn,
 .micro-btn {
@@ -514,6 +518,11 @@ label span,
   display: inline-flex;
   align-items: center;
   justify-content: center;
+}
+
+.primary-btn,
+.secondary-btn {
+  width: 100%;
 }
 
 .secondary-btn,
