@@ -37,33 +37,35 @@
       <section class="surface hero-surface">
         <div class="hero-top">
           <div class="hero-heading">
-            <div class="title-row title-row-compact">
-              <div class="heading-stack">
+            <div class="heading-stack">
+              <div class="eyebrow-row">
                 <p class="eyebrow"><%= viewMode === "month" ? "TO'LIQ OY" : "BUGUNGI HISOB" %></p>
-                <h1><%= viewMode === "month" ? monthLabel : selectedDateLabel %></h1>
+                <div class="header-pills">
+                  <button type="button" class="ghost-btn icon-pill theme-toggle" id="themeToggle" title="Theme" aria-label="Theme toggle">
+                    <span class="theme-icon theme-icon-sun" aria-hidden="true">&#9728;</span>
+                    <span class="theme-icon theme-icon-moon" aria-hidden="true">&#9789;</span>
+                  </button>
+                  <a
+                    class="ghost-btn icon-pill <%= viewMode === "today" ? "active-toggle" : "" %>"
+                    href="/?view=today&month=<%= currentMonth %>&date=<%= todayDate %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>"
+                    title="Bugun"
+                    aria-label="Bugun"
+                  >&#128197;</a>
+                  <a
+                    class="ghost-btn icon-pill <%= viewMode === "month" ? "active-toggle" : "" %>"
+                    href="/?view=month&month=<%= currentMonth %>&date=<%= selectedDate %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>"
+                    title="To'liq oy"
+                    aria-label="To'liq oy"
+                  >&#128467;</a>
+                  <% if (isAdmin) { %>
+                    <a class="name-pill admin-pill icon-pill" href="/admin?tgUsername=<%= telegramUsername %>" title="Admin" aria-label="Admin">&#128202;</a>
+                  <% } else { %>
+                    <div class="name-pill icon-pill" title="<%= telegramName %>" aria-label="<%= telegramName %>">&#128100;</div>
+                  <% } %>
+                </div>
               </div>
-              <div class="header-pills">
-                <button type="button" class="ghost-btn icon-pill theme-toggle" id="themeToggle" title="Theme" aria-label="Theme toggle">
-                  <span class="theme-icon theme-icon-sun" aria-hidden="true">&#9728;</span>
-                  <span class="theme-icon theme-icon-moon" aria-hidden="true">&#9789;</span>
-                </button>
-                <a
-                  class="ghost-btn icon-pill <%= viewMode === "today" ? "active-toggle" : "" %>"
-                  href="/?view=today&month=<%= currentMonth %>&date=<%= todayDate %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>"
-                  title="Bugun"
-                  aria-label="Bugun"
-                >&#128197;</a>
-                <a
-                  class="ghost-btn icon-pill <%= viewMode === "month" ? "active-toggle" : "" %>"
-                  href="/?view=month&month=<%= currentMonth %>&date=<%= selectedDate %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>"
-                  title="To'liq oy"
-                  aria-label="To'liq oy"
-                >&#128467;</a>
-                <% if (isAdmin) { %>
-                  <a class="name-pill admin-pill icon-pill" href="/admin?tgUsername=<%= telegramUsername %>" title="Admin" aria-label="Admin">&#128202;</a>
-                <% } else { %>
-                  <div class="name-pill icon-pill" title="<%= telegramName %>" aria-label="<%= telegramName %>">&#128100;</div>
-                <% } %>
+              <div class="title-row title-row-compact">
+                <h1><%= viewMode === "month" ? monthLabel : selectedDateLabel %></h1>
               </div>
             </div>
             <div class="hero-stat">

@@ -189,6 +189,13 @@ label span,
   gap: 4px;
 }
 
+.eyebrow-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .hero-stat {
   display: grid;
   gap: 4px;
@@ -225,7 +232,6 @@ label span,
 .title-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 8px;
 }
 
@@ -237,7 +243,7 @@ label span,
 
 .header-pills {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: flex-end;
   gap: 8px;
 }
