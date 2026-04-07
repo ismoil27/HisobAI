@@ -24,15 +24,15 @@
             <p class="hero-subtitle"><%= telegramName %> · <%= currentTimeLabel %> · <%= user.currency || "UZS" %></p>
           </div>
           <div class="hero-actions">
-            <div class="view-switch">
+            <div class="header-pills">
               <a class="ghost-btn <%= viewMode === "today" ? "active-toggle" : "" %>" href="/?view=today&month=<%= currentMonth %>&date=<%= todayDate %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>">Bugun</a>
               <a class="ghost-btn <%= viewMode === "month" ? "active-toggle" : "" %>" href="/?view=month&month=<%= currentMonth %>&date=<%= selectedDate %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>">To'liq oy</a>
+              <% if (isAdmin) { %>
+                <a class="name-pill admin-pill" href="/admin?tgUsername=<%= telegramUsername %>">Admin</a>
+              <% } else { %>
+                <div class="name-pill"><%= telegramName %></div>
+              <% } %>
             </div>
-            <% if (isAdmin) { %>
-              <a class="name-pill admin-pill" href="/admin?tgUsername=<%= telegramUsername %>">Admin</a>
-            <% } else { %>
-              <div class="name-pill"><%= telegramName %></div>
-            <% } %>
           </div>
         </div>
 
@@ -149,6 +149,120 @@
                             </div>
                             <div class="entry-actions">
                               <a class="micro-btn" href="/?view=today&month=<%= currentMonth %>&date=<%= selectedDate %>&editId=<%= entry.id %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>">Tahrirlash</a>
+                              <form method="post" action="/entries/<%= entry.id %>/delete">
+                                <input type="hidden" name="userId" value="<%= user.id %>" />
+                                <input type="hidden" name="month" value="<%= currentMonth %>" />
+                                <input type="hidden" name="date" value="<%= selectedDate %>" />
+                                <input type="hidden" name="view" value="<%= viewMode %>" />
+                                <input type="hidden" name="tgUserId" value="<%= telegramUserId %>" />
+                                <input type="hidden" name="tgName" value="<%= telegramName %>" />
+                                <input type="hidden" name="tgUsername" value="<%= telegramUsername %>" />
+                                <button type="submit" class="micro-btn danger-btn">O'chirish</button>
+                              </form>
+                            </div>
+                          </div>
+                        </article>
+                      <% }) %>
+                    <% } %>
+                  </div>
+                </section>
+              <% }) %>
+            </div>
+          </section>
+        </section>
+      <% } else { %>
+        <section class="content-grid month-form-grid">
+          <section class="surface day-surface">
+            <div class="surface-title-wrap compact-title">
+              <h2><%= editEntry ? "Yozuvni tahrirlash" : `${selectedDate} uchun yangi yozuv` %></h2>
+              <p>Kalendar ichidan tanlangan sana uchun vaqt, tur va miqdorni kiriting.</p>
+            </div>
+
+            <form method="post" action="/entries" class="entry-form">
+              <input type="hidden" name="userId" value="<%= user.id %>" />
+              <input type="hidden" name="month" value="<%= currentMonth %>" />
+              <input type="hidden" name="view" value="<%= viewMode %>" />
+              <input type="hidden" name="entryId" value="<%= editEntry ? editEntry.id : "" %>" />
+              <input type="hidden" name="tgUserId" value="<%= telegramUserId %>" />
+              <input type="hidden" name="tgName" value="<%= telegramName %>" />
+              <input type="hidden" name="tgUsername" value="<%= telegramUsername %>" />
+
+              <div class="type-tabs type-tabs-3">
+                <label class="type-option expense">
+                  <input type="radio" name="type" value="expense" <%= !editEntry || editEntry.type === "expense" ? "checked" : "" %> />
+                  <span>Xarajat</span>
+                </label>
+                <label class="type-option income">
+                  <input type="radio" name="type" value="income" <%= editEntry && editEntry.type === "income" ? "checked" : "" %> />
+                  <span>Tushum</span>
+                </label>
+                <label class="type-option debt">
+                  <input type="radio" name="type" value="debt" <%= editEntry && editEntry.type === "debt" ? "checked" : "" %> />
+                  <span>Qarz</span>
+                </label>
+              </div>
+
+              <div class="form-grid form-grid-3">
+                <label>
+                  <span>Miqdor</span>
+                  <input type="number" name="amount" step="0.01" min="0.01" placeholder="25000" value="<%= editEntry ? editEntry.amount : "" %>" required />
+                </label>
+                <label>
+                  <span>Sana</span>
+                  <input type="date" name="transactionDate" value="<%= editEntry ? editEntry.transaction_date : selectedDate %>" required />
+                </label>
+                <label>
+                  <span>Soat</span>
+                  <input type="text" name="transactionTime" inputmode="numeric" pattern="^\\d{2}:\\d{2}$" placeholder="10:49" value="<%= defaultTime %>" required />
+                </label>
+              </div>
+
+              <label>
+                <span>Toifa</span>
+                <input type="text" name="category" placeholder="Ovqat, Maosh, Yo'l, Qarz" value="<%= editEntry ? editEntry.category : "" %>" required />
+              </label>
+
+              <label>
+                <span>Izoh</span>
+                <input type="text" name="note" placeholder="Ixtiyoriy izoh" value="<%= editEntry ? editEntry.note : "" %>" />
+              </label>
+
+              <div class="form-actions">
+                <button type="submit" class="primary-btn"><%= editEntry ? "Yangilash" : "Saqlash" %></button>
+                <% if (editEntry) { %>
+                  <a class="secondary-btn" href="/?view=month&month=<%= currentMonth %>&date=<%= selectedDate %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>">Bekor qilish</a>
+                <% } %>
+              </div>
+            </form>
+          </section>
+
+          <section class="surface timeline-surface">
+            <div class="surface-title-wrap compact-title">
+              <h2><%= selectedDate %> yozuvlari</h2>
+              <p>Tanlangan sana uchun vaqt va summalar shu yerda ko'rinadi.</p>
+            </div>
+
+            <div class="timeline-list">
+              <% hourlyTimeline.forEach((slot) => { %>
+                <section class="timeline-slot">
+                  <div class="timeline-hour"><%= slot.label %></div>
+                  <div class="timeline-content">
+                    <% if (slot.entries.length === 0) { %>
+                      <div class="timeline-empty">Yozuv yo'q</div>
+                    <% } else { %>
+                      <% slot.entries.forEach((entry) => { %>
+                        <article class="entry-card <%= entry.type %> prominent-entry">
+                          <div>
+                            <p class="entry-category"><%= entry.category %></p>
+                            <p class="entry-note"><%= entry.transaction_time %> · <%= entry.note || "Izoh yo'q" %></p>
+                          </div>
+                          <div class="entry-side">
+                            <div class="entry-amount">
+                              <span><%= entry.type === "expense" ? "Xarajat" : entry.type === "income" ? "Tushum" : "Qarz" %></span>
+                              <strong><%= formatMoney(entry.amount) %></strong>
+                            </div>
+                            <div class="entry-actions">
+                              <a class="micro-btn" href="/?view=month&month=<%= currentMonth %>&date=<%= selectedDate %>&editId=<%= entry.id %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>">Tahrirlash</a>
                               <form method="post" action="/entries/<%= entry.id %>/delete">
                                 <input type="hidden" name="userId" value="<%= user.id %>" />
                                 <input type="hidden" name="month" value="<%= currentMonth %>" />

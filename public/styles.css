@@ -125,18 +125,20 @@ label span,
 .hero-actions {
   display: grid;
   gap: 8px;
+  align-items: start;
 }
 
-.view-switch {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+.header-pills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 8px;
 }
 
 .month-btn,
 .ghost-btn,
 .name-pill {
-  min-height: 38px;
+  min-height: 36px;
   border-radius: 13px;
   border: 1px solid var(--line);
   background: var(--surface-3);
@@ -145,6 +147,7 @@ label span,
   align-items: center;
   justify-content: center;
   padding: 0 12px;
+  white-space: nowrap;
 }
 
 .admin-pill {
@@ -673,9 +676,12 @@ label span,
 
   .hero-actions,
   .form-grid-3,
-  .stats-grid,
-  .view-switch {
+  .stats-grid {
     grid-template-columns: 1fr;
+  }
+
+  .header-pills {
+    justify-content: flex-start;
   }
 
   .timeline-slot {
