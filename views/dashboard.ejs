@@ -51,6 +51,10 @@
                 <% } %>
               </div>
             </div>
+            <div class="hero-stat">
+              <span>Bugungi xarajat</span>
+              <strong><%= formatMoney(todayTotals.expense) %></strong>
+            </div>
           </div>
         </div>
       </section>
@@ -192,6 +196,18 @@
 
             <label>
               <span>Toifa</span>
+              <div class="income-category-block" id="incomeCategoryBlock" hidden>
+                <select name="incomeCategoryPreset" id="incomeCategoryPreset" data-income-preset>
+                  <option value="">Kategoriya tanlang</option>
+                  <option value="Oylik">Oylik</option>
+                  <option value="Biznes">Biznes</option>
+                  <option value="Qarzini berdi">Qarzini berdi</option>
+                  <option value="Bonus">Bonus</option>
+                  <option value="To'yona">To'yona</option>
+                  <option value="Boshqa">Boshqa</option>
+                </select>
+                <input type="text" name="incomeCategoryCustom" id="incomeCategoryCustom" placeholder="Kategoriyani yozing" hidden />
+              </div>
               <div class="category-combo" id="categoryCombo">
                 <input type="text" name="category" placeholder="Ovqat, Maosh, Yo'l, Qarz" value="<%= draftEntry.category %>" required data-draft-source="category" id="categoryInput" autocomplete="off" />
                 <button type="button" class="category-toggle" id="categoryToggle" aria-label="Toifa tarixini ochish" aria-expanded="false">
@@ -318,14 +334,6 @@
 
     <script>
       const categoryHistory = <%- JSON.stringify(categoryHistory || { expense: [], income: [], debt: [] }) %>;
-      const incomeCategoryPresets = [
-        "Oylik",
-        "Biznes",
-        "Qarzini berdi",
-        "Bonus",
-        "To'yona",
-        "Boshqa"
-      ];
 
       if (window.Telegram && window.Telegram.WebApp) {
         const app = window.Telegram.WebApp;
@@ -353,6 +361,9 @@
       const categoryToggle = document.getElementById("categoryToggle");
       const categoryMenu = document.getElementById("categoryMenu");
       const categoryCombo = document.getElementById("categoryCombo");
+      const incomeCategoryBlock = document.getElementById("incomeCategoryBlock");
+      const incomeCategoryPreset = document.getElementById("incomeCategoryPreset");
+      const incomeCategoryCustom = document.getElementById("incomeCategoryCustom");
       const toastPopup = document.getElementById("toastPopup");
 
       if (toastPopup) {
@@ -375,28 +386,65 @@
           return checkedType ? checkedType.value : "expense";
         };
 
+        const setCategoryValue = (value) => {
+          if (categoryInput) {
+            categoryInput.value = value || "";
+          }
+          if (incomeCategoryCustom) {
+            incomeCategoryCustom.value = value || "";
+          }
+        };
+
+        const syncIncomeCategoryUi = () => {
+          const isIncome = getCurrentType() === "income";
+          const currentValue = categoryInput ? categoryInput.value.trim() : "";
+
+          if (categoryInput) {
+            categoryInput.required = !isIncome;
+          }
+
+          if (incomeCategoryBlock) {
+            incomeCategoryBlock.hidden = !isIncome;
+          }
+
+          if (categoryCombo) {
+            categoryCombo.hidden = isIncome;
+          }
+
+          if (!isIncome) {
+            if (incomeCategoryCustom) {
+              incomeCategoryCustom.hidden = true;
+            }
+            return;
+          }
+
+          const presetValues = ["Oylik", "Biznes", "Qarzini berdi", "Bonus", "To'yona"];
+          if (incomeCategoryPreset) {
+            if (!currentValue) {
+              incomeCategoryPreset.value = "";
+            } else if (presetValues.includes(currentValue)) {
+              incomeCategoryPreset.value = currentValue;
+            } else {
+              incomeCategoryPreset.value = "Boshqa";
+            }
+          }
+
+          if (incomeCategoryCustom) {
+            const useCustom = Boolean(currentValue) && !presetValues.includes(currentValue);
+            incomeCategoryCustom.hidden = !useCustom && incomeCategoryPreset?.value !== "Boshqa";
+            if (!incomeCategoryCustom.hidden) {
+              incomeCategoryCustom.value = useCustom ? currentValue : "";
+            }
+          }
+        };
+
         const renderCategoryHistory = () => {
           if (!categoryMenu) {
             return;
           }
 
           const currentType = getCurrentType();
-          const historyItems = Array.isArray(categoryHistory[currentType]) ? categoryHistory[currentType] : [];
-          const presetItems =
-            currentType === "income"
-              ? incomeCategoryPresets.map((category) => ({
-                  category,
-                  isPreset: true
-                }))
-              : [];
-          const mergedItems = [...presetItems];
-
-          historyItems.forEach((item) => {
-            if (!mergedItems.some((existing) => existing.category === item.category)) {
-              mergedItems.push(item);
-            }
-          });
-
+          const mergedItems = Array.isArray(categoryHistory[currentType]) ? categoryHistory[currentType] : [];
           const currentValue = categoryInput ? categoryInput.value.trim() : "";
           const filtered = currentValue
             ? mergedItems.filter((item) => String(item.category || "").toLowerCase().includes(currentValue.toLowerCase()))
@@ -415,9 +463,7 @@
             .map((item) => {
               const label = String(item.category || "");
               const activeClass = currentValue === label ? " active" : "";
-              const customAttr = label === "Boshqa" ? ' data-category-custom="true"' : "";
-              const presetClass = item.isPreset ? " preset" : "";
-              return `<button type="button" class="category-option${activeClass}${presetClass}" data-category-value="${encodeURIComponent(label)}"${customAttr}>${label}</button>`;
+              return `<button type="button" class="category-option${activeClass}" data-category-value="${encodeURIComponent(label)}">${label}</button>`;
             })
             .join("");
         };
@@ -481,13 +527,9 @@
             }
 
             const nextValue = decodeURIComponent(option.getAttribute("data-category-value") || "");
-            const isCustom = option.hasAttribute("data-category-custom");
-            categoryInput.value = isCustom ? "" : nextValue;
+            setCategoryValue(nextValue);
             syncDraft();
             closeCategoryMenu();
-            if (isCustom) {
-              categoryInput.focus();
-            }
           });
 
           categoryInput.addEventListener("focus", renderCategoryHistory);
@@ -511,16 +553,37 @@
           });
         }
 
+        if (incomeCategoryPreset && incomeCategoryCustom) {
+          incomeCategoryPreset.addEventListener("change", () => {
+            if (incomeCategoryPreset.value === "Boshqa") {
+              setCategoryValue("");
+              incomeCategoryCustom.hidden = false;
+              incomeCategoryCustom.focus();
+            } else {
+              incomeCategoryCustom.hidden = true;
+              setCategoryValue(incomeCategoryPreset.value);
+            }
+            syncDraft();
+          });
+
+          incomeCategoryCustom.addEventListener("input", () => {
+            setCategoryValue(incomeCategoryCustom.value);
+            syncDraft();
+          });
+        }
+
         entryForm.addEventListener("input", syncDraft);
         entryForm.addEventListener("change", (event) => {
           if (event.target && event.target.name === "type") {
             renderCategoryHistory();
             closeCategoryMenu();
+            syncIncomeCategoryUi();
           }
           syncDraft();
         });
         currencyForm.addEventListener("submit", syncDraft);
         renderCategoryHistory();
+        syncIncomeCategoryUi();
         syncDraft();
       }
     </script>

@@ -10,6 +10,7 @@ import {
   createTransaction,
   deleteTransaction,
   getCategoryHistoryByUser,
+  getDailyTotals,
   getLatestTransactionsByUser,
   getMonthActivity,
   getTransactionById,
@@ -91,6 +92,7 @@ export function buildDashboardViewModel({
   const monthData = monthBounds(month, user.timezone);
   const activity = getMonthActivity(user.id, compactDate(monthData.start), compactDate(monthData.end));
   const entries = getTransactionsByDate(user.id, compactDate(activeDate));
+  const todayTotals = getDailyTotals(user.id, compactDate(now));
   const monthSummary = getSummaryData(user.id, "month", user.timezone, user.currency || "UZS");
   const editEntry = editEntryId ? getTransactionById(Number(editEntryId), user.id) : null;
   const categoryHistory = getCategoryHistoryByUser(user.id);
@@ -148,6 +150,11 @@ export function buildDashboardViewModel({
     calendarWeeks: weeks,
     weekdayLabels: getUzbekWeekdays(),
     entries,
+    todayTotals: {
+      expense: Number(todayTotals.expense_total || 0),
+      income: Number(todayTotals.income_total || 0),
+      debt: Number(todayTotals.debt_total || 0)
+    },
     monthSummary,
     editEntry,
     draftEntry: buildDraftEntry({
