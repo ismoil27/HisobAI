@@ -144,7 +144,7 @@
                   >
                     <span class="day-number"><%= day.dayNumber %></span>
                     <% if (day.expenseTotal > 0) { %>
-                      <span class="day-amount"><%= formatMoney(day.expenseTotal) %></span>
+                      <span class="day-amount"><%= formatCompactAmount(day.expenseTotal) %></span>
                     <% } %>
                     <span class="day-dots">
                       <% if (day.hasIncome) { %><i class="dot income"></i><% } %>

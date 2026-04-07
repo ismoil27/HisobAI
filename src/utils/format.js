@@ -21,6 +21,30 @@ export function formatMoney(amount, currency = "UZS") {
   }).format(Number(amount || 0));
 }
 
+export function formatCompactAmount(amount) {
+  const numericAmount = Number(amount || 0);
+  const absolute = Math.abs(numericAmount);
+
+  if (absolute >= 1_000_000_000) {
+    return `${trimCompactNumber(numericAmount / 1_000_000_000)}b`;
+  }
+
+  if (absolute >= 1_000_000) {
+    return `${trimCompactNumber(numericAmount / 1_000_000)}m`;
+  }
+
+  if (absolute >= 1_000) {
+    return `${trimCompactNumber(numericAmount / 1_000)}k`;
+  }
+
+  return String(Math.round(numericAmount));
+}
+
+function trimCompactNumber(value) {
+  const rounded = Number(value.toFixed(1));
+  return Number.isInteger(rounded) ? String(rounded) : String(rounded);
+}
+
 export function compactDate(date) {
   return date.format("YYYY-MM-DD");
 }

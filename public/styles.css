@@ -339,7 +339,7 @@ label span,
   background: var(--surface-3);
   color: var(--text);
   padding: 9px 10px;
-  font-size: 13px;
+  font-size: 16px;
   font-family: "Poppins";
   font-weight: 500;
   opacity: 0.82;
@@ -474,7 +474,7 @@ label span,
   background: var(--surface-3);
   color: var(--text);
   padding: 9px 10px;
-  font-size: 13px;
+  font-size: 16px;
   font-family: "Poppins";
   font-weight: 500;
 }
@@ -486,7 +486,7 @@ label span,
   background: var(--surface-3);
   color: var(--text);
   padding: 9px 10px;
-  font-size: 13px;
+  font-size: 16px;
   font-family: "Poppins";
   font-weight: 500;
   opacity: 0.82;
@@ -499,7 +499,7 @@ label span,
 .entry-form input::placeholder,
 .category-combo .select-like-input::placeholder {
   font-family: "Poppins";
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 500;
   color: rgba(96, 112, 134, 0.72);
   opacity: 1;
@@ -519,7 +519,7 @@ label span,
   color: rgba(19, 32, 51, 0.68);
   caret-color: transparent;
   font-family: "Poppins";
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 500;
 }
 

@@ -19,7 +19,7 @@ import {
 } from "../repositories/transactionRepository.js";
 import { getSummaryData } from "./summaryService.js";
 import { convertTransactionsTotal } from "./exchangeRateService.js";
-import { compactDate, compactTime, formatMoney } from "../utils/format.js";
+import { compactDate, compactTime, formatCompactAmount, formatMoney } from "../utils/format.js";
 import { dayjs, getUzbekMonthLabel, getUzbekWeekdays, monthBounds, parseDateInput } from "../utils/dates.js";
 
 export function isAdminUsername(username) {
@@ -187,7 +187,8 @@ export async function buildDashboardViewModel({
     todayDate: compactDate(now),
     defaultTime,
     currencies: ["UZS", "USD", "KRW", "RUB", "EUR"],
-    formatMoney: (amount) => formatMoney(amount, user.currency || "UZS")
+    formatMoney: (amount) => formatMoney(amount, user.currency || "UZS"),
+    formatCompactAmount
   };
 }
 
