@@ -40,7 +40,7 @@ body {
     radial-gradient(circle at top left, rgba(49, 113, 255, 0.09), transparent 28%),
     linear-gradient(180deg, #f5f8fd 0%, #e9eef8 100%);
   color: var(--text);
-  font-family: "Manrope", sans-serif;
+  font-family: "Poppins";
 }
 
 :root[data-theme="dark"] body {
@@ -136,7 +136,7 @@ label span,
 .hero-subtitle,
 .timeline-hour,
 .timeline-empty {
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "Poppins";
 }
 
 .surface-title-wrap h1,
@@ -158,7 +158,7 @@ label span,
   color: var(--muted);
   font-size: 13px;
   line-height: 1.4;
-  font-family: "Poppins", sans-serif;
+  font-family: "Poppins";
   font-weight: 500;
   opacity: 0.72;
 }
@@ -221,7 +221,7 @@ label span,
 .hero-stat span {
   color: var(--muted);
   font-size: 10px;
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "Poppins";
 }
 
 .hero-stat strong {
@@ -329,7 +329,7 @@ label span,
 .currency-field span {
   color: var(--muted);
   font-size: 10px;
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "Poppins";
 }
 
 .currency-field select {
@@ -340,7 +340,7 @@ label span,
   color: var(--text);
   padding: 9px 10px;
   font-size: 13px;
-  font-family: "Poppins", sans-serif;
+  font-family: "Poppins";
   font-weight: 500;
   opacity: 0.82;
 }
@@ -420,7 +420,7 @@ label span,
 .calendar-focus-pill span {
   color: var(--muted);
   font-size: 10px;
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "Poppins";
 }
 
 .calendar-focus-pill strong {
@@ -475,7 +475,7 @@ label span,
   color: var(--text);
   padding: 9px 10px;
   font-size: 13px;
-  font-family: "Poppins", sans-serif;
+  font-family: "Poppins";
   font-weight: 500;
 }
 
@@ -487,7 +487,7 @@ label span,
   color: var(--text);
   padding: 9px 10px;
   font-size: 13px;
-  font-family: "Poppins", sans-serif;
+  font-family: "Poppins";
   font-weight: 500;
   opacity: 0.82;
 }
@@ -498,7 +498,7 @@ label span,
 
 .entry-form input::placeholder,
 .category-combo .select-like-input::placeholder {
-  font-family: "Poppins", sans-serif;
+  font-family: "Poppins";
   font-size: 13px;
   font-weight: 500;
   color: rgba(96, 112, 134, 0.72);
@@ -518,7 +518,7 @@ label span,
   cursor: pointer;
   color: rgba(19, 32, 51, 0.68);
   caret-color: transparent;
-  font-family: "Poppins", sans-serif;
+  font-family: "Poppins";
   font-size: 13px;
   font-weight: 500;
 }
