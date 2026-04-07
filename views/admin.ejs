@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HisobAI Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell admin-shell">
+      <section class="surface admin-header">
+        <div class="surface-title-wrap">
+          <h1>Admin</h1>
+          <p>@<%= viewerUsername %></p>
+        </div>
+        <a class="ghost-btn" href="/">Back</a>
+      </section>
+
+      <section class="admin-layout">
+        <section class="surface admin-users">
+          <div class="surface-title-wrap compact-title">
+            <h2>Users</h2>
+            <p><%= users.length %> total</p>
+          </div>
+
+          <div class="admin-user-list">
+            <% users.forEach((item) => { %>
+              <a class="admin-user-card <%= selectedUser && selectedUser.id === item.id ? "active" : "" %>" href="/admin?tgUsername=<%= viewerUsername %>&userId=<%= item.id %>">
+                <div>
+                  <strong><%= item.first_name || item.username || item.telegram_id %></strong>
+                  <p>@<%= item.username || "unknown" %></p>
+                </div>
+                <span><%= formatMoney(item.monthSummary.current.income - item.monthSummary.current.expense - item.monthSummary.current.debt) %></span>
+              </a>
+            <% }) %>
+          </div>
+        </section>
+
+        <section class="surface admin-detail">
+          <% if (!selectedUser) { %>
+            <div class="empty-state">No users yet.</div>
+          <% } else { %>
+            <div class="surface-title-wrap compact-title">
+              <h2><%= selectedUser.first_name || selectedUser.telegram_id %></h2>
+              <p>@<%= selectedUser.username || "unknown" %></p>
+            </div>
+
+            <div class="admin-meta">
+              <div class="meta-row"><span>Telegram ID</span><strong><%= selectedUser.telegram_id %></strong></div>
+              <div class="meta-row"><span>Username</span><strong>@<%= selectedUser.username || "unknown" %></strong></div>
+              <div class="meta-row"><span>Phone</span><strong>Not provided</strong></div>
+              <div class="meta-row"><span>Timezone</span><strong><%= selectedUser.timezone %></strong></div>
+            </div>
+
+            <div class="admin-stats">
+              <div class="mini-stat income">
+                <span>Income</span>
+                <strong><%= formatMoney(selectedUser.monthSummary.current.income) %></strong>
+              </div>
+              <div class="mini-stat expense">
+                <span>Expense</span>
+                <strong><%= formatMoney(selectedUser.monthSummary.current.expense) %></strong>
+              </div>
+              <div class="mini-stat debt">
+                <span>Qarz</span>
+                <strong><%= formatMoney(selectedUser.monthSummary.current.debt) %></strong>
+              </div>
+            </div>
+
+            <div class="surface-title-wrap compact-title">
+              <h2>Recent Entries</h2>
+              <p>Latest activity</p>
+            </div>
+
+            <% if (selectedUser.latestEntries.length === 0) { %>
+              <div class="empty-state">No entries yet.</div>
+            <% } else { %>
+              <div class="entry-list">
+                <% selectedUser.latestEntries.forEach((entry) => { %>
+                  <article class="entry-card <%= entry.type %>">
+                    <div>
+                      <p class="entry-category"><%= entry.category %></p>
+                      <p class="entry-note"><%= entry.transaction_date %> · <%= entry.note || "No note" %></p>
+                    </div>
+                    <div class="entry-amount">
+                      <span><%= entry.type %></span>
+                      <strong><%= formatMoney(entry.amount) %></strong>
+                    </div>
+                  </article>
+                <% }) %>
+              </div>
+            <% } %>
+          <% } %>
+        </section>
+      </section>
+    </div>
+  </body>
+</html>
