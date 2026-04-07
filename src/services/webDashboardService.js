@@ -228,7 +228,8 @@ export function buildAdminViewModel({ viewerUsername, selectedUserId }) {
 export function saveDashboardTransaction({ user, entryId, type, amount, category, note, transactionDate, transactionTime }) {
   const parsedDate = parseDateInput(transactionDate, user.timezone);
   const numericAmount = Number(amount);
-  const timeValue = String(transactionTime || "").trim();
+  const fallbackTime = compactTime(dayjs().tz(user.timezone));
+  const timeValue = String(transactionTime || fallbackTime).trim();
 
   if (!["expense", "income", "debt"].includes(type)) {
     return { ok: false, message: "Turi noto'g'ri." };

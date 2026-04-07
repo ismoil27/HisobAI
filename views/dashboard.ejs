@@ -69,6 +69,8 @@
               <input type="hidden" name="month" value="<%= currentMonth %>" />
               <input type="hidden" name="view" value="<%= viewMode %>" />
               <input type="hidden" name="entryId" value="<%= editEntry ? editEntry.id : "" %>" />
+              <input type="hidden" name="transactionDate" value="<%= editEntry ? editEntry.transaction_date : selectedDate %>" />
+              <input type="hidden" name="transactionTime" value="<%= defaultTime %>" />
               <input type="hidden" name="tgUserId" value="<%= telegramUserId %>" />
               <input type="hidden" name="tgName" value="<%= telegramName %>" />
               <input type="hidden" name="tgUsername" value="<%= telegramUsername %>" />
@@ -88,18 +90,10 @@
                 </label>
               </div>
 
-              <div class="form-grid form-grid-3">
+              <div class="form-grid">
                 <label>
                   <span>Miqdor</span>
                   <input type="number" name="amount" step="0.01" min="0.01" placeholder="25000" value="<%= editEntry ? editEntry.amount : "" %>" required />
-                </label>
-                <label>
-                  <span>Sana</span>
-                  <input type="date" name="transactionDate" value="<%= editEntry ? editEntry.transaction_date : selectedDate %>" required />
-                </label>
-                <label>
-                  <span>Soat</span>
-                  <input type="text" name="transactionTime" inputmode="numeric" pattern="^\\d{2}:\\d{2}$" placeholder="10:49" value="<%= defaultTime %>" required />
                 </label>
               </div>
 
@@ -183,6 +177,8 @@
               <input type="hidden" name="month" value="<%= currentMonth %>" />
               <input type="hidden" name="view" value="<%= viewMode %>" />
               <input type="hidden" name="entryId" value="<%= editEntry ? editEntry.id : "" %>" />
+              <input type="hidden" name="transactionDate" value="<%= editEntry ? editEntry.transaction_date : selectedDate %>" />
+              <input type="hidden" name="transactionTime" value="<%= defaultTime %>" />
               <input type="hidden" name="tgUserId" value="<%= telegramUserId %>" />
               <input type="hidden" name="tgName" value="<%= telegramName %>" />
               <input type="hidden" name="tgUsername" value="<%= telegramUsername %>" />
@@ -202,18 +198,10 @@
                 </label>
               </div>
 
-              <div class="form-grid form-grid-3">
+              <div class="form-grid">
                 <label>
                   <span>Miqdor</span>
                   <input type="number" name="amount" step="0.01" min="0.01" placeholder="25000" value="<%= editEntry ? editEntry.amount : "" %>" required />
-                </label>
-                <label>
-                  <span>Sana</span>
-                  <input type="date" name="transactionDate" value="<%= editEntry ? editEntry.transaction_date : selectedDate %>" required />
-                </label>
-                <label>
-                  <span>Soat</span>
-                  <input type="text" name="transactionTime" inputmode="numeric" pattern="^\\d{2}:\\d{2}$" placeholder="10:49" value="<%= defaultTime %>" required />
                 </label>
               </div>
 
