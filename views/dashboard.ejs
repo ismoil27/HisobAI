@@ -25,12 +25,12 @@
           </div>
           <div class="hero-actions">
             <div class="header-pills">
-              <a class="ghost-btn <%= viewMode === "today" ? "active-toggle" : "" %>" href="/?view=today&month=<%= currentMonth %>&date=<%= todayDate %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>">Bugun</a>
-              <a class="ghost-btn <%= viewMode === "month" ? "active-toggle" : "" %>" href="/?view=month&month=<%= currentMonth %>&date=<%= selectedDate %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>">To'liq oy</a>
+              <a class="ghost-btn icon-pill <%= viewMode === "today" ? "active-toggle" : "" %>" href="/?view=today&month=<%= currentMonth %>&date=<%= todayDate %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>" title="Bugun" aria-label="Bugun">📅</a>
+              <a class="ghost-btn icon-pill <%= viewMode === "month" ? "active-toggle" : "" %>" href="/?view=month&month=<%= currentMonth %>&date=<%= selectedDate %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>" title="To'liq oy" aria-label="To'liq oy">🗓</a>
               <% if (isAdmin) { %>
-                <a class="name-pill admin-pill" href="/admin?tgUsername=<%= telegramUsername %>">Admin</a>
+                <a class="name-pill admin-pill icon-pill" href="/admin?tgUsername=<%= telegramUsername %>" title="Admin" aria-label="Admin">📊</a>
               <% } else { %>
-                <div class="name-pill"><%= telegramName %></div>
+                <div class="name-pill icon-pill" title="<%= telegramName %>" aria-label="<%= telegramName %>">👤</div>
               <% } %>
             </div>
           </div>

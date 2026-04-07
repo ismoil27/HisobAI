@@ -133,6 +133,14 @@ label span,
   gap: 8px;
 }
 
+.icon-pill {
+  width: 34px;
+  min-width: 34px;
+  min-height: 34px;
+  padding: 0;
+  font-size: 16px;
+}
+
 .month-btn,
 .ghost-btn,
 .name-pill {
@@ -701,6 +709,13 @@ label span,
     border-radius: 13px;
     padding: 0 12px;
     font-size: 13px;
+  }
+
+  .icon-pill {
+    width: 36px;
+    min-width: 36px;
+    min-height: 36px;
+    font-size: 17px;
   }
 
   .month-btn {
