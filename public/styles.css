@@ -816,6 +816,27 @@ label span,
   color: #ffd0d2;
 }
 
+.icon-action {
+  min-width: 34px;
+  min-height: 30px;
+  padding: 0 8px;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.edit-action {
+  color: #2ca85e;
+  border-color: rgba(44, 168, 94, 0.26);
+  background: rgba(44, 168, 94, 0.08);
+}
+
+.danger-btn.icon-action {
+  color: #de4455;
+  border-color: rgba(222, 68, 85, 0.28);
+  background: rgba(222, 68, 85, 0.08);
+}
+
 .entry-actions form {
   margin: 0;
 }

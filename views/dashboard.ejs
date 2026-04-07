@@ -258,7 +258,12 @@
                       <strong><%= formatMoney(entry.amount) %></strong>
                     </div>
                     <div class="entry-actions">
-                      <a class="micro-btn" href="/?view=<%= viewMode %>&month=<%= currentMonth %>&date=<%= selectedDate %>&editId=<%= entry.id %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>">Tahrirlash</a>
+                      <a
+                        class="micro-btn icon-action edit-action"
+                        href="/?view=<%= viewMode %>&month=<%= currentMonth %>&date=<%= selectedDate %>&editId=<%= entry.id %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>"
+                        aria-label="Tahrirlash"
+                        title="Tahrirlash"
+                      >✏️</a>
                       <form method="post" action="/entries/<%= entry.id %>/delete">
                         <input type="hidden" name="userId" value="<%= user.id %>" />
                         <input type="hidden" name="month" value="<%= currentMonth %>" />
@@ -267,7 +272,7 @@
                         <input type="hidden" name="tgUserId" value="<%= telegramUserId %>" />
                         <input type="hidden" name="tgName" value="<%= telegramName %>" />
                         <input type="hidden" name="tgUsername" value="<%= telegramUsername %>" />
-                        <button type="submit" class="micro-btn danger-btn">O'chirish</button>
+                        <button type="submit" class="micro-btn icon-action danger-btn" aria-label="O'chirish" title="O'chirish">🗑️</button>
                       </form>
                     </div>
                   </div>
