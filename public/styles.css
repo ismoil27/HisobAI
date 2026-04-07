@@ -415,6 +415,15 @@ label span,
   padding-right: 48px;
 }
 
+.category-combo .select-like-input {
+  cursor: pointer;
+  color: #c8d0dc;
+}
+
+.category-combo .select-like-input::placeholder {
+  color: #9ba6b5;
+}
+
 .category-toggle {
   position: absolute;
   top: 50%;

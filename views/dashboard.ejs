@@ -366,6 +366,8 @@
       }
 
       if (currencyForm && entryForm) {
+        let incomeCustomMode = false;
+
         const getCurrentType = () => {
           const checkedType = entryForm.querySelector('[data-draft-source="type"]:checked');
           return checkedType ? checkedType.value : "expense";
@@ -383,7 +385,7 @@
           const isIncome = getCurrentType() === "income";
           const currentValue = categoryInput ? categoryInput.value.trim() : "";
           const isPreset = incomeCategoryPresets.includes(currentValue);
-          const isCustomIncome = isIncome && currentValue && !isPreset;
+          const isCustomIncome = isIncome && (incomeCustomMode || (currentValue && !isPreset));
 
           if (categoryInput) {
             categoryInput.required = true;
@@ -391,6 +393,7 @@
             categoryInput.placeholder = isIncome
               ? (currentValue || "Kategoriya tanlang")
               : "Ovqat, Maosh, Yo'l, Qarz";
+            categoryInput.classList.toggle("select-like-input", isIncome && !isCustomIncome);
           }
         };
 
@@ -497,6 +500,7 @@
 
             const nextValue = decodeURIComponent(option.getAttribute("data-category-value") || "");
             const isCustom = option.hasAttribute("data-category-custom");
+            incomeCustomMode = isCustom;
             setCategoryValue(isCustom ? "" : nextValue);
             syncIncomeCategoryUi();
             syncDraft();
@@ -506,8 +510,17 @@
             }
           });
 
-          categoryInput.addEventListener("focus", renderCategoryHistory);
+          categoryInput.addEventListener("focus", () => {
+            if (getCurrentType() === "income" && !incomeCustomMode) {
+              openCategoryMenu();
+              return;
+            }
+            renderCategoryHistory();
+          });
           categoryInput.addEventListener("input", () => {
+            if (getCurrentType() === "income") {
+              incomeCustomMode = true;
+            }
             syncDraft();
             if (isCategoryMenuOpen()) {
               renderCategoryHistory();
@@ -530,6 +543,7 @@
         entryForm.addEventListener("input", syncDraft);
         entryForm.addEventListener("change", (event) => {
           if (event.target && event.target.name === "type") {
+            incomeCustomMode = false;
             renderCategoryHistory();
             closeCategoryMenu();
             syncIncomeCategoryUi();
