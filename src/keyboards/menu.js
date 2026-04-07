@@ -1,7 +1,7 @@
 import { Markup } from "telegraf";
 import { getWebAppUrl, hasTelegramWebAppUrl } from "../webAppUrl.js";
 
-const OPEN_WEB_LABEL = "Open App";
+const OPEN_WEB_LABEL = "Ilovani ochish";
 
 export function mainMenuKeyboard() {
   if (hasTelegramWebAppUrl()) {
@@ -25,18 +25,18 @@ export function webAppReplyKeyboard() {
 
 export function addTypeKeyboard() {
   return Markup.inlineKeyboard([
-    [Markup.button.callback("Expense", "add:type:expense"), Markup.button.callback("Income", "add:type:income")]
+    [Markup.button.callback("Xarajat", "add:type:expense"), Markup.button.callback("Tushum", "add:type:income")]
   ]);
 }
 
 export function addDateKeyboard() {
   return Markup.inlineKeyboard([
-    [Markup.button.callback("Use Today", "add:date:today"), Markup.button.callback("Custom Date", "add:date:custom")]
+    [Markup.button.callback("Bugun", "add:date:today"), Markup.button.callback("Boshqa sana", "add:date:custom")]
   ]);
 }
 
 export function summaryKeyboard() {
   return Markup.inlineKeyboard([
-    [Markup.button.callback("This Week", "summary:week"), Markup.button.callback("This Month", "summary:month")]
+    [Markup.button.callback("Shu hafta", "summary:week"), Markup.button.callback("Shu oy", "summary:month")]
   ]);
 }

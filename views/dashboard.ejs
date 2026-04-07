@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="uz">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -16,70 +16,52 @@
         <section class="flash-banner"><%= flashMessage %></section>
       <% } %>
 
-      <section class="surface calendar-surface">
-        <div class="surface-header">
-          <a href="/?month=<%= previousMonth %>&date=<%= selectedDate %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>" class="month-btn" aria-label="Previous month">&lsaquo;</a>
-          <div class="surface-title-wrap">
-            <h1><%= monthLabel %></h1>
-            <% if (monthSummary.comparison) { %><p><%= monthSummary.comparison %></p><% } %>
+      <section class="surface hero-surface">
+        <div class="hero-top">
+          <div>
+            <p class="eyebrow">BUGUNGI HISOB</p>
+            <h1><%= selectedDateLabel %></h1>
+            <p class="hero-subtitle"><%= telegramName %> · <%= currentTimeLabel %></p>
           </div>
-          <a href="/?month=<%= nextMonth %>&date=<%= selectedDate %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>" class="month-btn" aria-label="Next month">&rsaquo;</a>
+          <div class="hero-actions">
+            <a class="ghost-btn" href="/?month=<%= currentMonth %>&date=<%= todayDate %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>">Bugun</a>
+            <% if (isAdmin) { %>
+              <a class="name-pill admin-pill" href="/admin?tgUsername=<%= telegramUsername %>">Admin</a>
+            <% } else { %>
+              <div class="name-pill"><%= telegramName %></div>
+            <% } %>
+          </div>
         </div>
 
-        <div class="mini-toolbar">
-          <a class="ghost-btn" href="/?month=<%= currentMonth %>&date=<%= new Date().toISOString().slice(0, 10) %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>">Today</a>
-          <% if (isAdmin) { %>
-            <a class="name-pill admin-pill" href="/admin?tgUsername=<%= telegramUsername %>">Admin</a>
-          <% } else { %>
-            <div class="name-pill"><%= telegramName %></div>
-          <% } %>
-        </div>
-
-        <div class="legend">
-          <span><i class="dot income"></i> Income</span>
-          <span><i class="dot expense"></i> Expense</span>
-          <span><i class="dot debt"></i> Qarz</span>
-        </div>
-
-        <div class="weekday-row">
-          <span>Su</span>
-          <span>Mo</span>
-          <span>Tu</span>
-          <span>We</span>
-          <span>Th</span>
-          <span>Fr</span>
-          <span>Sa</span>
-        </div>
-
-        <div class="calendar-grid">
-          <% calendarWeeks.forEach((week) => { %>
-            <% week.forEach((day) => { %>
-              <% if (!day) { %>
-                <div class="calendar-cell empty"></div>
-              <% } else { %>
-                <a href="/?month=<%= currentMonth %>&date=<%= day.isoDate %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>" class="calendar-cell <%= day.isSelected ? "selected" : "" %> <%= day.isToday ? "today" : "" %>">
-                  <span class="day-number"><%= day.dayNumber %></span>
-                  <span class="day-dots">
-                    <% if (day.hasIncome) { %><i class="dot income"></i><% } %>
-                    <% if (day.hasExpense) { %><i class="dot expense"></i><% } %>
-                    <% if (day.hasDebt) { %><i class="dot debt"></i><% } %>
-                  </span>
-                </a>
-              <% } %>
-            <% }) %>
-          <% }) %>
+        <div class="stats-grid">
+          <article class="mini-stat income">
+            <span>Tushum</span>
+            <strong><%= formatMoney(dailyTotals.income_total) %></strong>
+            <small><%= incomeEntriesCount %> ta yozuv</small>
+          </article>
+          <article class="mini-stat expense">
+            <span>Xarajat</span>
+            <strong><%= formatMoney(dailyTotals.expense_total) %></strong>
+            <small><%= expenseEntriesCount %> ta yozuv</small>
+          </article>
+          <article class="mini-stat debt">
+            <span>Qarz</span>
+            <strong><%= formatMoney(dailyTotals.debt_total) %></strong>
+            <small><%= debtEntriesCount %> ta yozuv</small>
+          </article>
+          <article class="mini-stat balance">
+            <span>Balans</span>
+            <strong><%= formatMoney(balance) %></strong>
+            <small>Kun yakuni</small>
+          </article>
         </div>
       </section>
 
       <section class="content-grid">
         <section class="surface day-surface">
           <div class="surface-title-wrap compact-title">
-            <h2><%= editEntry ? "Edit Entry" : selectedDate %></h2>
-            <p>
-              Expense <strong><%= formatMoney(dailyTotals.expense_total) %></strong>
-              · Income <strong><%= formatMoney(dailyTotals.income_total) %></strong>
-              · Qarz <strong><%= formatMoney(dailyTotals.debt_total) %></strong>
-            </p>
+            <h2><%= editEntry ? "Yozuvni tahrirlash" : "Yangi yozuv" %></h2>
+            <p>Bugungi kun uchun soat bo'yicha tushum, xarajat yoki qarz qo'shing.</p>
           </div>
 
           <form method="post" action="/entries" class="entry-form">
@@ -93,11 +75,11 @@
             <div class="type-tabs type-tabs-3">
               <label class="type-option expense">
                 <input type="radio" name="type" value="expense" <%= !editEntry || editEntry.type === "expense" ? "checked" : "" %> />
-                <span>Expense</span>
+                <span>Xarajat</span>
               </label>
               <label class="type-option income">
                 <input type="radio" name="type" value="income" <%= editEntry && editEntry.type === "income" ? "checked" : "" %> />
-                <span>Income</span>
+                <span>Tushum</span>
               </label>
               <label class="type-option debt">
                 <input type="radio" name="type" value="debt" <%= editEntry && editEntry.type === "debt" ? "checked" : "" %> />
@@ -105,77 +87,182 @@
               </label>
             </div>
 
-            <div class="form-grid">
+            <div class="form-grid form-grid-3">
               <label>
-                <span>Amount</span>
-                <input type="number" name="amount" step="0.01" min="0.01" placeholder="25.50" value="<%= editEntry ? editEntry.amount : "" %>" required />
+                <span>Miqdor</span>
+                <input type="number" name="amount" step="0.01" min="0.01" placeholder="25000" value="<%= editEntry ? editEntry.amount : "" %>" required />
               </label>
               <label>
-                <span>Date</span>
+                <span>Sana</span>
                 <input type="date" name="transactionDate" value="<%= editEntry ? editEntry.transaction_date : selectedDate %>" required />
+              </label>
+              <label>
+                <span>Soat</span>
+                <input type="time" name="transactionTime" value="<%= defaultTime %>" required />
               </label>
             </div>
 
             <label>
-              <span>Category</span>
-              <input type="text" name="category" placeholder="Food, Salary, Transport, Borrowed" value="<%= editEntry ? editEntry.category : "" %>" required />
+              <span>Toifa</span>
+              <input type="text" name="category" placeholder="Ovqat, Maosh, Yo'l, Qarz" value="<%= editEntry ? editEntry.category : "" %>" required />
             </label>
 
             <label>
-              <span>Note</span>
-              <input type="text" name="note" placeholder="Optional note" value="<%= editEntry ? editEntry.note : "" %>" />
+              <span>Izoh</span>
+              <input type="text" name="note" placeholder="Ixtiyoriy izoh" value="<%= editEntry ? editEntry.note : "" %>" />
             </label>
 
             <div class="form-actions">
-              <button type="submit" class="primary-btn"><%= editEntry ? "Update" : "Save" %></button>
+              <button type="submit" class="primary-btn"><%= editEntry ? "Yangilash" : "Saqlash" %></button>
               <% if (editEntry) { %>
-                <a class="secondary-btn" href="/?month=<%= currentMonth %>&date=<%= selectedDate %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>">Cancel</a>
+                <a class="secondary-btn" href="/?month=<%= currentMonth %>&date=<%= selectedDate %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>">Bekor qilish</a>
               <% } %>
             </div>
           </form>
         </section>
 
-        <section class="surface entries-surface">
+        <section class="surface timeline-surface">
           <div class="surface-title-wrap compact-title">
-            <h2>Entries</h2>
-            <p><%= entries.length %> item(s)</p>
+            <h2>Bugungi vaqtlar</h2>
+            <p>Soatma-soat harakatlaringiz shu yerda ko'rinadi.</p>
           </div>
 
-          <% if (entries.length === 0) { %>
-            <div class="empty-state">No entries on this day yet.</div>
-          <% } else { %>
-            <div class="entry-list">
-              <% entries.forEach((entry) => { %>
-                <article class="entry-card <%= entry.type %>">
-                  <div>
-                    <p class="entry-category"><%= entry.category %></p>
-                    <p class="entry-note"><%= entry.note || "No note" %></p>
-                  </div>
-                  <div class="entry-side">
-                    <div class="entry-amount">
-                      <span><%= entry.type === "expense" ? "Spending" : entry.type === "income" ? "Income" : "Qarz" %></span>
-                      <strong><%= formatMoney(entry.amount) %></strong>
-                    </div>
-                    <div class="entry-actions">
-                      <a class="micro-btn" href="/?month=<%= currentMonth %>&date=<%= selectedDate %>&editId=<%= entry.id %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>">Edit</a>
-                      <form method="post" action="/entries/<%= entry.id %>/delete">
-                        <input type="hidden" name="userId" value="<%= user.id %>" />
-                        <input type="hidden" name="month" value="<%= currentMonth %>" />
-                        <input type="hidden" name="date" value="<%= selectedDate %>" />
-                        <input type="hidden" name="tgUserId" value="<%= telegramUserId %>" />
-                        <input type="hidden" name="tgName" value="<%= telegramName %>" />
-                        <input type="hidden" name="tgUsername" value="<%= telegramUsername %>" />
-                        <button type="submit" class="micro-btn danger-btn">Delete</button>
-                      </form>
-                    </div>
-                  </div>
-                </article>
-              <% }) %>
-            </div>
-          <% } %>
+          <div class="timeline-list">
+            <% hourlyTimeline.forEach((slot) => { %>
+              <section class="timeline-slot">
+                <div class="timeline-hour"><%= slot.label %></div>
+                <div class="timeline-content">
+                  <% if (slot.entries.length === 0) { %>
+                    <div class="timeline-empty">Yozuv yo'q</div>
+                  <% } else { %>
+                    <% slot.entries.forEach((entry) => { %>
+                      <article class="entry-card <%= entry.type %>">
+                        <div>
+                          <p class="entry-category"><%= entry.category %></p>
+                          <p class="entry-note"><%= entry.transaction_time %> · <%= entry.note || "Izoh yo'q" %></p>
+                        </div>
+                        <div class="entry-side">
+                          <div class="entry-amount">
+                            <span><%= entry.type === "expense" ? "Xarajat" : entry.type === "income" ? "Tushum" : "Qarz" %></span>
+                            <strong><%= formatMoney(entry.amount) %></strong>
+                          </div>
+                          <div class="entry-actions">
+                            <a class="micro-btn" href="/?month=<%= currentMonth %>&date=<%= selectedDate %>&editId=<%= entry.id %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>">Tahrirlash</a>
+                            <form method="post" action="/entries/<%= entry.id %>/delete">
+                              <input type="hidden" name="userId" value="<%= user.id %>" />
+                              <input type="hidden" name="month" value="<%= currentMonth %>" />
+                              <input type="hidden" name="date" value="<%= selectedDate %>" />
+                              <input type="hidden" name="tgUserId" value="<%= telegramUserId %>" />
+                              <input type="hidden" name="tgName" value="<%= telegramName %>" />
+                              <input type="hidden" name="tgUsername" value="<%= telegramUsername %>" />
+                              <button type="submit" class="micro-btn danger-btn">O'chirish</button>
+                            </form>
+                          </div>
+                        </div>
+                      </article>
+                    <% }) %>
+                  <% } %>
+                </div>
+              </section>
+            <% }) %>
+          </div>
         </section>
       </section>
+
+      <section class="surface analysis-surface">
+        <div class="surface-title-wrap compact-title">
+          <h2>Tahlil</h2>
+          <% if (monthSummary.comparison) { %>
+            <p><%= monthSummary.comparison %></p>
+          <% } else { %>
+            <p>Oylik ko'rsatkichlar shu yerda ko'rinadi.</p>
+          <% } %>
+        </div>
+
+        <div class="stats-grid month-stats">
+          <article class="mini-stat income">
+            <span>Oylik tushum</span>
+            <strong><%= formatMoney(monthSummary.current.income) %></strong>
+          </article>
+          <article class="mini-stat expense">
+            <span>Oylik xarajat</span>
+            <strong><%= formatMoney(monthSummary.current.expense) %></strong>
+          </article>
+          <article class="mini-stat debt">
+            <span>Oylik qarz</span>
+            <strong><%= formatMoney(monthSummary.current.debt) %></strong>
+          </article>
+          <article class="mini-stat balance">
+            <span>Oylik balans</span>
+            <strong><%= formatMoney(monthSummary.current.income - monthSummary.current.expense - monthSummary.current.debt) %></strong>
+          </article>
+        </div>
+
+        <div class="breakdown-list">
+          <% if (categoryBreakdown.length === 0) { %>
+            <div class="empty-state">Bugungi xarajatlar bo'yicha toifalar hali yo'q.</div>
+          <% } else { %>
+            <% categoryBreakdown.forEach((item) => { %>
+              <article class="breakdown-item">
+                <div class="breakdown-label">
+                  <strong><%= item.category %></strong>
+                  <span><%= formatMoney(item.amount) %> · <%= item.percent %>%</span>
+                </div>
+                <div class="progress-track">
+                  <span class="progress-bar" style="width:<%= item.percent %>%"></span>
+                </div>
+              </article>
+            <% }) %>
+          <% } %>
+        </div>
+      </section>
+
+      <section class="surface calendar-surface">
+        <div class="surface-header">
+          <a href="/?month=<%= previousMonth %>&date=<%= selectedDate %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>" class="month-btn" aria-label="Oldingi oy">&lsaquo;</a>
+          <div class="surface-title-wrap">
+            <h2><%= monthLabel %></h2>
+            <p>Kunni tanlang va tafsilotlarni ko'ring.</p>
+          </div>
+          <a href="/?month=<%= nextMonth %>&date=<%= selectedDate %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>" class="month-btn" aria-label="Keyingi oy">&rsaquo;</a>
+        </div>
+
+        <div class="legend">
+          <span><i class="dot income"></i> Tushum</span>
+          <span><i class="dot expense"></i> Xarajat</span>
+          <span><i class="dot debt"></i> Qarz</span>
+        </div>
+
+        <div class="weekday-row">
+          <% weekdayLabels.forEach((label) => { %>
+            <span><%= label %></span>
+          <% }) %>
+        </div>
+
+        <div class="calendar-grid">
+          <% calendarWeeks.forEach((week) => { %>
+            <% week.forEach((day) => { %>
+              <% if (!day) { %>
+                <div class="calendar-cell empty"></div>
+              <% } else { %>
+                <a href="/?month=<%= currentMonth %>&date=<%= day.isoDate %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>" class="calendar-cell <%= day.isSelected ? "selected" : "" %> <%= day.isToday ? "today" : "" %>">
+                  <span class="day-number"><%= day.dayNumber %></span>
+                  <% if (day.expenseTotal > 0) { %>
+                    <span class="day-amount"><%= formatMoney(day.expenseTotal) %></span>
+                  <% } %>
+                  <span class="day-dots">
+                    <% if (day.hasIncome) { %><i class="dot income"></i><% } %>
+                    <% if (day.hasExpense) { %><i class="dot expense"></i><% } %>
+                    <% if (day.hasDebt) { %><i class="dot debt"></i><% } %>
+                  </span>
+                </a>
+              <% } %>
+            <% }) %>
+          <% }) %>
+        </div>
+      </section>
     </div>
+
     <script>
       if (window.Telegram && window.Telegram.WebApp) {
         const app = window.Telegram.WebApp;

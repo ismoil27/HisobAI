@@ -32,6 +32,7 @@ db.exec(`
     category TEXT NOT NULL,
     note TEXT,
     transaction_date TEXT NOT NULL,
+    transaction_time TEXT NOT NULL DEFAULT '12:00',
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(user_id) REFERENCES users(id)
   );
@@ -56,17 +57,29 @@ if (transactionSchema?.sql && !transactionSchema.sql.includes("'debt'")) {
       category TEXT NOT NULL,
       note TEXT,
       transaction_date TEXT NOT NULL,
+      transaction_time TEXT NOT NULL DEFAULT '12:00',
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY(user_id) REFERENCES users(id)
     );
 
-    INSERT INTO transactions (id, user_id, type, amount, category, note, transaction_date, created_at)
-    SELECT id, user_id, type, amount, category, note, transaction_date, created_at
+    INSERT INTO transactions (id, user_id, type, amount, category, note, transaction_date, transaction_time, created_at)
+    SELECT id, user_id, type, amount, category, note, transaction_date, '12:00', created_at
     FROM transactions_old;
 
     DROP TABLE transactions_old;
 
     CREATE INDEX IF NOT EXISTS idx_transactions_user_date
       ON transactions(user_id, transaction_date);
+  `);
+}
+
+const transactionTimeColumn = db
+  .prepare("PRAGMA table_info(transactions)")
+  .all()
+  .find((column) => column.name === "transaction_time");
+
+if (!transactionTimeColumn) {
+  db.exec(`
+    ALTER TABLE transactions ADD COLUMN transaction_time TEXT NOT NULL DEFAULT '12:00';
   `);
 }

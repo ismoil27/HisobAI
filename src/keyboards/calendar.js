@@ -20,11 +20,11 @@ function markerForDay(activity) {
 export function buildCalendarKeyboard(monthText, timezoneName, activityRows) {
   const targetMonth = dayjs.tz(monthText, "YYYY-MM", timezoneName).startOf("month");
   const bounds = monthBounds(targetMonth, timezoneName);
-  const firstWeekday = Number(bounds.start.format("d"));
+  const firstWeekday = (Number(bounds.start.format("d")) + 6) % 7;
   const daysInMonth = bounds.end.date();
   const activityMap = new Map(activityRows.map((row) => [row.transaction_date, row]));
   const rows = [];
-  const headers = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((label) => Markup.button.callback(label, "noop"));
+  const headers = ["Du", "Se", "Ch", "Pa", "Ju", "Sh", "Ya"].map((label) => Markup.button.callback(label, "noop"));
 
   rows.push(headers);
 
@@ -57,7 +57,7 @@ export function buildCalendarKeyboard(monthText, timezoneName, activityRows) {
     Markup.button.callback(">", `calendar:month:${targetMonth.add(1, "month").format("YYYY-MM")}`)
   ]);
 
-  rows.push([Markup.button.callback("Back to Menu", "menu:home")]);
+  rows.push([Markup.button.callback("Menyuga qaytish", "menu:home")]);
 
   return Markup.inlineKeyboard(rows);
 }

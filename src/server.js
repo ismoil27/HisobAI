@@ -73,7 +73,8 @@ export function createServer() {
       amount: req.body.amount,
       category: req.body.category,
       note: req.body.note,
-      transactionDate: req.body.transactionDate
+      transactionDate: req.body.transactionDate,
+      transactionTime: req.body.transactionTime
     });
 
     if (!result.ok) {

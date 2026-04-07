@@ -1,8 +1,8 @@
 import { db } from "../db.js";
 
 const insertStmt = db.prepare(`
-  INSERT INTO transactions (user_id, type, amount, category, note, transaction_date)
-  VALUES (@user_id, @type, @amount, @category, @note, @transaction_date)
+  INSERT INTO transactions (user_id, type, amount, category, note, transaction_date, transaction_time)
+  VALUES (@user_id, @type, @amount, @category, @note, @transaction_date, @transaction_time)
 `);
 
 const updateStmt = db.prepare(`
@@ -11,7 +11,8 @@ const updateStmt = db.prepare(`
       amount = @amount,
       category = @category,
       note = @note,
-      transaction_date = @transaction_date
+      transaction_date = @transaction_date,
+      transaction_time = @transaction_time
   WHERE id = @id AND user_id = @user_id
 `);
 
@@ -30,7 +31,7 @@ const latestByUserStmt = db.prepare(`
   SELECT *
   FROM transactions
   WHERE user_id = ?
-  ORDER BY transaction_date DESC, id DESC
+  ORDER BY transaction_date DESC, transaction_time DESC, id DESC
   LIMIT ?
 `);
 
@@ -38,7 +39,7 @@ const byDateStmt = db.prepare(`
   SELECT *
   FROM transactions
   WHERE user_id = ? AND transaction_date = ?
-  ORDER BY id ASC
+  ORDER BY transaction_time ASC, id ASC
 `);
 
 const monthStmt = db.prepare(`
@@ -59,7 +60,7 @@ const rangeStmt = db.prepare(`
   FROM transactions
   WHERE user_id = ?
     AND transaction_date BETWEEN ? AND ?
-  ORDER BY transaction_date ASC, id ASC
+  ORDER BY transaction_date ASC, transaction_time ASC, id ASC
 `);
 
 const totalsByDateStmt = db.prepare(`

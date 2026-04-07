@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="uz">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -13,17 +13,17 @@
     <div class="app-shell admin-shell">
       <section class="surface admin-header">
         <div class="surface-title-wrap">
-          <h1>Admin</h1>
+          <h1>Admin panel</h1>
           <p>@<%= viewerUsername %></p>
         </div>
-        <a class="ghost-btn" href="/">Back</a>
+        <a class="ghost-btn" href="/">Orqaga</a>
       </section>
 
       <section class="admin-layout">
         <section class="surface admin-users">
           <div class="surface-title-wrap compact-title">
-            <h2>Users</h2>
-            <p><%= users.length %> total</p>
+            <h2>Foydalanuvchilar</h2>
+            <p>Jami: <%= users.length %></p>
           </div>
 
           <div class="admin-user-list">
@@ -31,7 +31,7 @@
               <a class="admin-user-card <%= selectedUser && selectedUser.id === item.id ? "active" : "" %>" href="/admin?tgUsername=<%= viewerUsername %>&userId=<%= item.id %>">
                 <div>
                   <strong><%= item.first_name || item.username || item.telegram_id %></strong>
-                  <p>@<%= item.username || "unknown" %></p>
+                  <p>@<%= item.username || "noma'lum" %></p>
                 </div>
                 <span><%= formatMoney(item.monthSummary.current.income - item.monthSummary.current.expense - item.monthSummary.current.debt) %></span>
               </a>
@@ -41,52 +41,56 @@
 
         <section class="surface admin-detail">
           <% if (!selectedUser) { %>
-            <div class="empty-state">No users yet.</div>
+            <div class="empty-state">Hali foydalanuvchi yo'q.</div>
           <% } else { %>
             <div class="surface-title-wrap compact-title">
               <h2><%= selectedUser.first_name || selectedUser.telegram_id %></h2>
-              <p>@<%= selectedUser.username || "unknown" %></p>
+              <p>@<%= selectedUser.username || "noma'lum" %></p>
             </div>
 
             <div class="admin-meta">
               <div class="meta-row"><span>Telegram ID</span><strong><%= selectedUser.telegram_id %></strong></div>
-              <div class="meta-row"><span>Username</span><strong>@<%= selectedUser.username || "unknown" %></strong></div>
-              <div class="meta-row"><span>Phone</span><strong>Not provided</strong></div>
-              <div class="meta-row"><span>Timezone</span><strong><%= selectedUser.timezone %></strong></div>
+              <div class="meta-row"><span>Username</span><strong>@<%= selectedUser.username || "noma'lum" %></strong></div>
+              <div class="meta-row"><span>Telefon</span><strong>Taqdim etilmagan</strong></div>
+              <div class="meta-row"><span>Vaqt zonasi</span><strong><%= selectedUser.timezone %></strong></div>
             </div>
 
-            <div class="admin-stats">
+            <div class="stats-grid month-stats">
               <div class="mini-stat income">
-                <span>Income</span>
+                <span>Tushum</span>
                 <strong><%= formatMoney(selectedUser.monthSummary.current.income) %></strong>
               </div>
               <div class="mini-stat expense">
-                <span>Expense</span>
+                <span>Xarajat</span>
                 <strong><%= formatMoney(selectedUser.monthSummary.current.expense) %></strong>
               </div>
               <div class="mini-stat debt">
                 <span>Qarz</span>
                 <strong><%= formatMoney(selectedUser.monthSummary.current.debt) %></strong>
               </div>
+              <div class="mini-stat balance">
+                <span>Balans</span>
+                <strong><%= formatMoney(selectedUser.monthSummary.current.income - selectedUser.monthSummary.current.expense - selectedUser.monthSummary.current.debt) %></strong>
+              </div>
             </div>
 
             <div class="surface-title-wrap compact-title">
-              <h2>Recent Entries</h2>
-              <p>Latest activity</p>
+              <h2>So'nggi yozuvlar</h2>
+              <p>Oxirgi faollik</p>
             </div>
 
             <% if (selectedUser.latestEntries.length === 0) { %>
-              <div class="empty-state">No entries yet.</div>
+              <div class="empty-state">Hali yozuv yo'q.</div>
             <% } else { %>
               <div class="entry-list">
                 <% selectedUser.latestEntries.forEach((entry) => { %>
                   <article class="entry-card <%= entry.type %>">
                     <div>
                       <p class="entry-category"><%= entry.category %></p>
-                      <p class="entry-note"><%= entry.transaction_date %> · <%= entry.note || "No note" %></p>
+                      <p class="entry-note"><%= entry.transaction_date %> · <%= entry.transaction_time || "12:00" %> · <%= entry.note || "Izoh yo'q" %></p>
                     </div>
                     <div class="entry-amount">
-                      <span><%= entry.type %></span>
+                      <span><%= entry.type === "expense" ? "Xarajat" : entry.type === "income" ? "Tushum" : "Qarz" %></span>
                       <strong><%= formatMoney(entry.amount) %></strong>
                     </div>
                   </article>

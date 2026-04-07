@@ -16,8 +16,46 @@ import {
   updateTransaction
 } from "../repositories/transactionRepository.js";
 import { getSummaryData } from "./summaryService.js";
-import { compactDate, formatMoney } from "../utils/format.js";
-import { dayjs, monthBounds, parseDateInput } from "../utils/dates.js";
+import { compactDate, compactTime, formatMoney } from "../utils/format.js";
+import { dayjs, getUzbekMonthLabel, getUzbekWeekdays, monthBounds, parseDateInput } from "../utils/dates.js";
+
+function buildHourlyTimeline(entries) {
+  const grouped = new Map();
+
+  for (const entry of entries) {
+    const hourKey = String(entry.transaction_time || "12:00").slice(0, 2);
+    if (!grouped.has(hourKey)) {
+      grouped.set(hourKey, []);
+    }
+    grouped.get(hourKey).push(entry);
+  }
+
+  return Array.from({ length: 24 }, (_, hour) => {
+    const hourKey = String(hour).padStart(2, "0");
+    return {
+      label: `${hourKey}:00`,
+      entries: grouped.get(hourKey) || []
+    };
+  });
+}
+
+function buildCategoryBreakdown(entries) {
+  const totals = new Map();
+  let grandTotal = 0;
+
+  for (const entry of entries) {
+    grandTotal += Number(entry.amount);
+    totals.set(entry.category, (totals.get(entry.category) || 0) + Number(entry.amount));
+  }
+
+  return [...totals.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([category, amount]) => ({
+      category,
+      amount,
+      percent: grandTotal > 0 ? Math.round((amount / grandTotal) * 100) : 0
+    }));
+}
 
 export function isAdminUsername(username) {
   return Boolean(username && username.toLowerCase() === config.adminTelegramUsername);
@@ -69,18 +107,17 @@ export function buildDashboardViewModel({
   telegramUsername
 }) {
   const now = dayjs().tz(user.timezone);
-  const normalizedMonth = monthText || now.format("YYYY-MM");
-  const month = dayjs.tz(normalizedMonth, "YYYY-MM", user.timezone).startOf("month");
-  const monthData = monthBounds(month, user.timezone);
   const activeDate = parseDateInput(selectedDate || compactDate(now), user.timezone) || now.startOf("day");
+  const month = dayjs.tz(monthText || activeDate.format("YYYY-MM"), "YYYY-MM", user.timezone).startOf("month");
+  const monthData = monthBounds(month, user.timezone);
   const activity = getMonthActivity(user.id, compactDate(monthData.start), compactDate(monthData.end));
   const entries = getTransactionsByDate(user.id, compactDate(activeDate));
   const dailyTotals = getDailyTotals(user.id, compactDate(activeDate));
   const monthSummary = getSummaryData(user.id, "month", user.timezone);
   const editEntry = editEntryId ? getTransactionById(Number(editEntryId), user.id) : null;
-
   const activityMap = new Map(activity.map((item) => [item.transaction_date, item]));
-  const firstWeekday = Number(monthData.start.format("d"));
+
+  const firstWeekday = (Number(monthData.start.format("d")) + 6) % 7;
   const daysInMonth = monthData.end.date();
   const weeks = [];
   let row = [];
@@ -100,7 +137,8 @@ export function buildDashboardViewModel({
       isToday: isoDate === compactDate(now),
       hasExpense: Number(totals?.expense_total || 0) > 0,
       hasIncome: Number(totals?.income_total || 0) > 0,
-      hasDebt: Number(totals?.debt_total || 0) > 0
+      hasDebt: Number(totals?.debt_total || 0) > 0,
+      expenseTotal: Number(totals?.expense_total || 0)
     });
 
     if (row.length === 7) {
@@ -116,23 +154,38 @@ export function buildDashboardViewModel({
     weeks.push(row);
   }
 
+  const expenseEntries = entries.filter((entry) => entry.type === "expense");
+  const incomeEntries = entries.filter((entry) => entry.type === "income");
+  const debtEntries = entries.filter((entry) => entry.type === "debt");
+
   return {
     flashMessage,
     user,
-    currentMonth: normalizedMonth,
+    currentMonth: month.format("YYYY-MM"),
     previousMonth: month.subtract(1, "month").format("YYYY-MM"),
     nextMonth: month.add(1, "month").format("YYYY-MM"),
-    monthLabel: monthData.label,
+    monthLabel: getUzbekMonthLabel(month),
     selectedDate: compactDate(activeDate),
+    selectedDateLabel: `${activeDate.format("D")} ${getUzbekMonthLabel(activeDate)}`,
+    currentTimeLabel: now.format("HH:mm"),
     calendarWeeks: weeks,
+    weekdayLabels: getUzbekWeekdays(),
     entries,
+    hourlyTimeline: buildHourlyTimeline(entries),
     dailyTotals,
     monthSummary,
+    categoryBreakdown: buildCategoryBreakdown(expenseEntries),
     editEntry,
     isAdmin: isAdminUsername(telegramUsername || user.username),
     telegramUserId: telegramUserId || user.telegram_id,
-    telegramName: telegramName || user.first_name || "My Account",
+    telegramName: telegramName || user.first_name || "Mening hisobim",
     telegramUsername: telegramUsername || user.username || "",
+    todayDate: compactDate(now),
+    defaultTime: editEntry?.transaction_time || compactTime(now),
+    expenseEntriesCount: expenseEntries.length,
+    incomeEntriesCount: incomeEntries.length,
+    debtEntriesCount: debtEntries.length,
+    balance: Number(dailyTotals.income_total) - Number(dailyTotals.expense_total) - Number(dailyTotals.debt_total),
     formatMoney
   };
 }
@@ -168,24 +221,29 @@ export function buildAdminViewModel({ viewerUsername, selectedUserId }) {
   };
 }
 
-export function saveDashboardTransaction({ user, entryId, type, amount, category, note, transactionDate }) {
+export function saveDashboardTransaction({ user, entryId, type, amount, category, note, transactionDate, transactionTime }) {
   const parsedDate = parseDateInput(transactionDate, user.timezone);
   const numericAmount = Number(amount);
+  const timeValue = String(transactionTime || "").trim();
 
   if (!["expense", "income", "debt"].includes(type)) {
-    return { ok: false, message: "Type must be expense, income, or debt." };
+    return { ok: false, message: "Turi noto'g'ri." };
   }
 
   if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
-    return { ok: false, message: "Amount must be a positive number." };
+    return { ok: false, message: "Miqdor musbat son bo'lishi kerak." };
   }
 
   if (!category || !category.trim()) {
-    return { ok: false, message: "Category is required." };
+    return { ok: false, message: "Toifa kiritilishi shart." };
   }
 
   if (!parsedDate) {
-    return { ok: false, message: "Date must be in YYYY-MM-DD format." };
+    return { ok: false, message: "Sana YYYY-MM-DD formatida bo'lishi kerak." };
+  }
+
+  if (!/^\d{2}:\d{2}$/.test(timeValue)) {
+    return { ok: false, message: "Vaqt HH:MM formatida bo'lishi kerak." };
   }
 
   const payload = {
@@ -194,7 +252,8 @@ export function saveDashboardTransaction({ user, entryId, type, amount, category
     amount: numericAmount,
     category: category.trim(),
     note: note?.trim() || "",
-    transaction_date: compactDate(parsedDate)
+    transaction_date: compactDate(parsedDate),
+    transaction_time: timeValue
   };
 
   if (entryId) {
@@ -204,7 +263,7 @@ export function saveDashboardTransaction({ user, entryId, type, amount, category
     });
     return {
       ok: true,
-      message: "Entry updated.",
+      message: "Yozuv yangilandi.",
       transactionDate: compactDate(parsedDate)
     };
   }
@@ -212,7 +271,7 @@ export function saveDashboardTransaction({ user, entryId, type, amount, category
   createTransaction(payload);
   return {
     ok: true,
-    message: `${type === "expense" ? "Expense" : type === "income" ? "Income" : "Qarz"} saved.`,
+    message: "Yozuv saqlandi.",
     transactionDate: compactDate(parsedDate)
   };
 }
@@ -221,6 +280,6 @@ export function removeDashboardTransaction({ user, entryId }) {
   deleteTransaction(Number(entryId), user.id);
   return {
     ok: true,
-    message: "Entry deleted."
+    message: "Yozuv o'chirildi."
   };
 }

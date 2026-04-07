@@ -11,6 +11,31 @@ dayjs.extend(customParseFormat);
 
 export { dayjs };
 
+const MONTHS_UZ = [
+  "Yanvar",
+  "Fevral",
+  "Mart",
+  "Aprel",
+  "May",
+  "Iyun",
+  "Iyul",
+  "Avgust",
+  "Sentabr",
+  "Oktabr",
+  "Noyabr",
+  "Dekabr"
+];
+
+const WEEKDAYS_UZ = ["Du", "Se", "Ch", "Pa", "Ju", "Sh", "Ya"];
+
+export function getUzbekMonthLabel(date) {
+  return `${MONTHS_UZ[date.month()]} ${date.year()}`;
+}
+
+export function getUzbekWeekdays() {
+  return WEEKDAYS_UZ;
+}
+
 export function parseDateInput(input, fallbackTimezone) {
   const raw = input.trim();
   if (raw.toLowerCase() === "today") {
@@ -28,7 +53,7 @@ export function parseDateInput(input, fallbackTimezone) {
 export function monthBounds(targetMonth, timezoneName) {
   const month = targetMonth.tz(timezoneName).startOf("month");
   return {
-    label: month.format("MMMM YYYY"),
+    label: getUzbekMonthLabel(month),
     start: month.startOf("month"),
     end: month.endOf("month")
   };
@@ -44,8 +69,8 @@ export function summaryBounds(kind, timezoneName) {
     const previousEnd = currentEnd.subtract(1, "week");
 
     return {
-      current: { label: `${currentStart.format("D MMM")} - ${currentEnd.format("D MMM YYYY")}`, start: currentStart, end: currentEnd },
-      previous: { label: `${previousStart.format("D MMM")} - ${previousEnd.format("D MMM YYYY")}`, start: previousStart, end: previousEnd }
+      current: { label: `${currentStart.format("D")} ${MONTHS_UZ[currentStart.month()]} - ${currentEnd.format("D")} ${MONTHS_UZ[currentEnd.month()]} ${currentEnd.format("YYYY")}`, start: currentStart, end: currentEnd },
+      previous: { label: `${previousStart.format("D")} ${MONTHS_UZ[previousStart.month()]} - ${previousEnd.format("D")} ${MONTHS_UZ[previousEnd.month()]} ${previousEnd.format("YYYY")}`, start: previousStart, end: previousEnd }
     };
   }
 
@@ -56,7 +81,7 @@ export function summaryBounds(kind, timezoneName) {
   const previousEnd = previousMonth.endOf("month");
 
   return {
-    current: { label: currentStart.format("MMMM YYYY"), start: currentStart, end: currentEnd },
-    previous: { label: previousStart.format("MMMM YYYY"), start: previousStart, end: previousEnd }
+    current: { label: getUzbekMonthLabel(currentStart), start: currentStart, end: currentEnd },
+    previous: { label: getUzbekMonthLabel(previousStart), start: previousStart, end: previousEnd }
   };
 }

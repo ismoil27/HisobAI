@@ -40,14 +40,14 @@ export function buildComparisonText(currentExpense, previousExpense, currentLabe
   const percent = Math.abs((diff / previousExpense) * 100).toFixed(1);
 
   if (diff === 0) {
-    return `You spent the same in ${currentLabel} as in ${previousLabel}.`;
+    return `${currentLabel} oyida xarajat ${previousLabel} oyiga teng bo'ldi.`;
   }
 
   if (diff < 0) {
-    return `You spent ${percent}% less in ${currentLabel} than in ${previousLabel}.`;
+    return `${currentLabel} oyida ${previousLabel} oyiga nisbatan ${percent}% kam xarajat qildingiz.`;
   }
 
-  return `You spent ${percent}% more in ${currentLabel} than in ${previousLabel}.`;
+  return `${currentLabel} oyida ${previousLabel} oyiga nisbatan ${percent}% ko'p xarajat qildingiz.`;
 }
 
 export function topCategories(categoryMap) {
@@ -93,12 +93,12 @@ export function buildSummaryMessage(userId, kind, timezoneName) {
   const { bounds, current, comparison, categories } = getSummaryData(userId, kind, timezoneName);
 
   const lines = [
-    `Summary for ${bounds.current.label}`,
+    `${bounds.current.label} bo'yicha hisobot`,
     ``,
-    `Expense: ${formatMoney(current.expense)}`,
-    `Income: ${formatMoney(current.income)}`,
+    `Xarajat: ${formatMoney(current.expense)}`,
+    `Tushum: ${formatMoney(current.income)}`,
     `Qarz: ${formatMoney(current.debt)}`,
-    `Net: ${formatMoney(current.income - current.expense - current.debt)}`
+    `Balans: ${formatMoney(current.income - current.expense - current.debt)}`
   ];
 
   if (comparison) {
@@ -106,7 +106,7 @@ export function buildSummaryMessage(userId, kind, timezoneName) {
   }
 
   if (categories.length > 0) {
-    lines.push("", "Top categories:");
+    lines.push("", "Asosiy toifalar:");
     for (const line of categories) {
       lines.push(`- ${line}`);
     }
