@@ -185,15 +185,15 @@
             <div class="type-tabs type-tabs-3">
               <label class="type-option expense">
                 <input type="radio" name="type" value="expense" <%= draftEntry.type === "expense" ? "checked" : "" %> data-draft-source="type" />
-                <span>Xarajat</span>
+                <span><i aria-hidden="true">💸</i> Xarajat</span>
               </label>
               <label class="type-option income">
                 <input type="radio" name="type" value="income" <%= draftEntry.type === "income" ? "checked" : "" %> data-draft-source="type" />
-                <span>Tushum</span>
+                <span><i aria-hidden="true">💚</i> Tushum</span>
               </label>
               <label class="type-option debt">
                 <input type="radio" name="type" value="debt" <%= draftEntry.type === "debt" ? "checked" : "" %> data-draft-source="type" />
-                <span>Qarz</span>
+                <span><i aria-hidden="true">🟠</i> Qarz</span>
               </label>
             </div>
 

@@ -3,8 +3,19 @@ import { query } from "../db.js";
 export async function createTransaction(payload) {
   const result = await query(
     `
-      INSERT INTO transactions (user_id, type, amount, transaction_currency, category, note, transaction_date, transaction_time)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      INSERT INTO transactions (
+        user_id,
+        type,
+        status,
+        amount,
+        transaction_currency,
+        category,
+        note,
+        transaction_date,
+        transaction_time,
+        updated_at
+      )
+      VALUES ($1, $2, 'ACTIVE', $3, $4, $5, $6, $7, $8, CURRENT_TIMESTAMP)
       RETURNING *
     `,
     [
@@ -32,7 +43,10 @@ export async function updateTransaction(payload) {
           category = $4,
           note = $5,
           transaction_date = $6,
-          transaction_time = $7
+          transaction_time = $7,
+          status = 'ACTIVE',
+          deleted_at = NULL,
+          updated_at = CURRENT_TIMESTAMP
       WHERE id = $8 AND user_id = $9
       RETURNING *
     `,
@@ -55,8 +69,12 @@ export async function updateTransaction(payload) {
 export async function deleteTransaction(id, userId) {
   const result = await query(
     `
-      DELETE FROM transactions
+      UPDATE transactions
+      SET status = 'DELETED',
+          deleted_at = CURRENT_TIMESTAMP,
+          updated_at = CURRENT_TIMESTAMP
       WHERE id = $1 AND user_id = $2
+        AND status <> 'DELETED'
       RETURNING id
     `,
     [Number(id), Number(userId)]
@@ -71,6 +89,7 @@ export async function getTransactionById(id, userId) {
       SELECT *
       FROM transactions
       WHERE id = $1 AND user_id = $2
+        AND status = 'ACTIVE'
       LIMIT 1
     `,
     [Number(id), Number(userId)]
@@ -85,6 +104,7 @@ export async function getLatestTransactionsByUser(userId, limit = 20) {
       SELECT *
       FROM transactions
       WHERE user_id = $1
+        AND status = 'ACTIVE'
       ORDER BY transaction_date DESC, transaction_time DESC, id DESC
       LIMIT $2
     `,
@@ -100,6 +120,7 @@ export async function getTransactionsByDate(userId, date) {
       SELECT *
       FROM transactions
       WHERE user_id = $1 AND transaction_date = $2
+        AND status = 'ACTIVE'
       ORDER BY transaction_time ASC, id ASC
     `,
     [Number(userId), date]
@@ -114,6 +135,7 @@ export async function getTransactionsForRange(userId, startDate, endDate) {
       SELECT *
       FROM transactions
       WHERE user_id = $1
+        AND status = 'ACTIVE'
         AND transaction_date BETWEEN $2 AND $3
       ORDER BY transaction_date ASC, transaction_time ASC, id ASC
     `,
@@ -133,6 +155,7 @@ export async function getMonthActivity(userId, startDate, endDate) {
         SUM(CASE WHEN type = 'debt' THEN amount ELSE 0 END) AS debt_total
       FROM transactions
       WHERE user_id = $1
+        AND status = 'ACTIVE'
         AND transaction_date BETWEEN $2 AND $3
       GROUP BY transaction_date
       ORDER BY transaction_date ASC
@@ -153,6 +176,7 @@ export async function getDailyTotals(userId, date) {
         SUM(CASE WHEN type = 'debt' THEN amount ELSE 0 END) AS debt_total
       FROM transactions
       WHERE user_id = $1
+        AND status = 'ACTIVE'
         AND transaction_date = $2
       GROUP BY transaction_date
     `,
@@ -179,6 +203,7 @@ export async function getCategoryHistoryByUser(userId, limitPerType = 12) {
         MAX(transaction_date || ' ' || transaction_time) AS last_used_at
       FROM transactions
       WHERE user_id = $1
+        AND status = 'ACTIVE'
         AND TRIM(COALESCE(category, '')) <> ''
       GROUP BY type, category
       ORDER BY last_used_at DESC, usage_count DESC, category ASC

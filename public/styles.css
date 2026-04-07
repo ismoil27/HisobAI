@@ -625,7 +625,10 @@ label span,
 }
 
 .type-option span {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   text-align: center;
   padding: 9px 8px;
   border-radius: 11px;
@@ -633,6 +636,12 @@ label span,
   border: 1px solid var(--line);
   cursor: pointer;
   font-size: 13px;
+}
+
+.type-option span i {
+  font-style: normal;
+  font-size: 14px;
+  line-height: 1;
 }
 
 .type-option.expense input:checked + span {
@@ -990,10 +999,8 @@ label span,
   background: var(--surface-2);
   border: 1px solid var(--line);
   padding: 10px;
-  display: flex;
-  justify-content: space-between;
+  display: grid;
   gap: 10px;
-  align-items: center;
 }
 
 .admin-user-card.active {
@@ -1010,6 +1017,49 @@ label span,
   margin: 4px 0 0;
   color: var(--muted);
   font-size: 10px;
+}
+
+.admin-user-main {
+  display: grid;
+  gap: 2px;
+}
+
+.admin-user-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.admin-user-metrics .metric {
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 7px 8px;
+  font-size: 10px;
+  color: var(--muted);
+  display: grid;
+  gap: 3px;
+}
+
+.admin-user-metrics .metric strong {
+  color: var(--text);
+  font-size: 12px;
+}
+
+.admin-user-metrics .metric.income {
+  box-shadow: inset 0 2px 0 var(--income);
+}
+
+.admin-user-metrics .metric.expense {
+  box-shadow: inset 0 2px 0 var(--expense);
+}
+
+.admin-user-metrics .metric.debt {
+  box-shadow: inset 0 2px 0 var(--debt);
+}
+
+.admin-user-metrics .metric.balance {
+  box-shadow: inset 0 2px 0 var(--balance);
 }
 
 .admin-meta {

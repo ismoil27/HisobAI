@@ -44,12 +44,15 @@ export async function initializeDatabase() {
       id SERIAL PRIMARY KEY,
       user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       type TEXT NOT NULL CHECK(type IN ('expense', 'income', 'debt')),
+      status TEXT NOT NULL DEFAULT 'ACTIVE' CHECK(status IN ('ACTIVE', 'DELETED')),
       amount DOUBLE PRECISION NOT NULL,
       transaction_currency TEXT,
       category TEXT NOT NULL,
       note TEXT,
       transaction_date TEXT NOT NULL,
       transaction_time TEXT NOT NULL DEFAULT '12:00',
+      deleted_at TIMESTAMPTZ,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
       created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
   `);
@@ -72,6 +75,27 @@ export async function initializeDatabase() {
   await query(`
     ALTER TABLE transactions
     ADD COLUMN IF NOT EXISTS transaction_currency TEXT;
+  `);
+
+  await query(`
+    ALTER TABLE transactions
+    ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'ACTIVE';
+  `);
+
+  await query(`
+    ALTER TABLE transactions
+    ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+  `);
+
+  await query(`
+    ALTER TABLE transactions
+    ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP;
+  `);
+
+  await query(`
+    UPDATE transactions
+    SET status = 'ACTIVE'
+    WHERE status IS NULL OR TRIM(status) = '';
   `);
 
   await query(`

@@ -29,11 +29,16 @@
           <div class="admin-user-list">
             <% users.forEach((item) => { %>
               <a class="admin-user-card <%= selectedUser && selectedUser.id === item.id ? "active" : "" %>" href="/admin?tgUsername=<%= viewerUsername %>&userId=<%= item.id %>">
-                <div>
+                <div class="admin-user-main">
                   <strong><%= item.first_name || item.username || item.telegram_id %></strong>
                   <p>@<%= item.username || "noma'lum" %></p>
                 </div>
-                <span><%= formatMoney(item.monthSummary.current.income - item.monthSummary.current.expense - item.monthSummary.current.debt) %></span>
+                <div class="admin-user-metrics">
+                  <span class="metric income">Tushum <strong><%= formatMoney(item.monthSummary.current.income, item.currency || "UZS") %></strong></span>
+                  <span class="metric expense">Xarajat <strong><%= formatMoney(item.monthSummary.current.expense, item.currency || "UZS") %></strong></span>
+                  <span class="metric debt">Qarz <strong><%= formatMoney(item.monthSummary.current.debt, item.currency || "UZS") %></strong></span>
+                  <span class="metric balance">Balans <strong><%= formatMoney(item.monthSummary.current.income - item.monthSummary.current.expense - item.monthSummary.current.debt, item.currency || "UZS") %></strong></span>
+                </div>
               </a>
             <% }) %>
           </div>
