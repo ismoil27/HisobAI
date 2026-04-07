@@ -31,13 +31,14 @@ Telegram bot for recording spending, income, and debt, with a Telegram Mini App 
    - `PORT=3000`
    - `TELEGRAM_WEB_APP_URL=https://your-app-name.up.railway.app`
    - `ADMIN_TELEGRAM_USERNAME=ismoiljon27`
-   - `DB_PATH=/data/hisob.db` if you attach a Railway volume
+   - `DB_PATH=/data/hisob.db`
 4. Deploy once, copy the Railway public URL, and set that same URL as `TELEGRAM_WEB_APP_URL`.
 5. In BotFather, update the Mini App URL to the same Railway HTTPS URL.
+6. Add a Railway Volume and mount it at `/data`.
 
 Important:
 - Railway gives a public HTTPS URL, which is enough for Telegram Mini Apps.
-- If you keep SQLite, use a Railway volume. Without a volume, SQLite data will be ephemeral.
+- SQLite on Railway must use a mounted volume at `/data`, otherwise data will be wiped on redeploy.
 
 ## Commands
 

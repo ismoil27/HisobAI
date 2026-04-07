@@ -18,25 +18,25 @@
 
       <section class="surface hero-surface">
         <div class="hero-top">
-          <div>
+          <div class="hero-heading">
             <p class="eyebrow"><%= viewMode === "month" ? "TO'LIQ OY" : "BUGUNGI HISOB" %></p>
-            <h1><%= viewMode === "month" ? monthLabel : selectedDateLabel %></h1>
-            <p class="hero-subtitle"><%= telegramName %> · <%= currentTimeLabel %> · <%= user.currency || "UZS" %></p>
-          </div>
-          <div class="hero-actions">
-            <div class="header-pills">
-              <a class="ghost-btn icon-pill <%= viewMode === "today" ? "active-toggle" : "" %>" href="/?view=today&month=<%= currentMonth %>&date=<%= todayDate %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>" title="Bugun" aria-label="Bugun">📅</a>
-              <a class="ghost-btn icon-pill <%= viewMode === "month" ? "active-toggle" : "" %>" href="/?view=month&month=<%= currentMonth %>&date=<%= selectedDate %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>" title="To'liq oy" aria-label="To'liq oy">🗓</a>
-              <% if (isAdmin) { %>
-                <a class="name-pill admin-pill icon-pill" href="/admin?tgUsername=<%= telegramUsername %>" title="Admin" aria-label="Admin">📊</a>
-              <% } else { %>
-                <div class="name-pill icon-pill" title="<%= telegramName %>" aria-label="<%= telegramName %>">👤</div>
-              <% } %>
+            <div class="title-row">
+              <h1><%= viewMode === "month" ? monthLabel : selectedDateLabel %></h1>
+              <div class="header-pills">
+                <a class="ghost-btn icon-pill <%= viewMode === "today" ? "active-toggle" : "" %>" href="/?view=today&month=<%= currentMonth %>&date=<%= todayDate %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>" title="Bugun" aria-label="Bugun">&#128197;</a>
+                <a class="ghost-btn icon-pill <%= viewMode === "month" ? "active-toggle" : "" %>" href="/?view=month&month=<%= currentMonth %>&date=<%= selectedDate %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>" title="To'liq oy" aria-label="To'liq oy">&#128467;</a>
+                <% if (isAdmin) { %>
+                  <a class="name-pill admin-pill icon-pill" href="/admin?tgUsername=<%= telegramUsername %>" title="Admin" aria-label="Admin">&#128202;</a>
+                <% } else { %>
+                  <div class="name-pill icon-pill" title="<%= telegramName %>" aria-label="<%= telegramName %>">&#128100;</div>
+                <% } %>
+              </div>
             </div>
+            <p class="hero-subtitle"><%= telegramName %> · <%= currentTimeLabel %> · <%= user.currency || "UZS" %></p>
           </div>
         </div>
 
-        <form method="post" action="/settings/currency" class="currency-form">
+        <form method="post" action="/settings/currency" class="currency-form" id="currencyForm">
           <input type="hidden" name="userId" value="<%= user.id %>" />
           <input type="hidden" name="month" value="<%= currentMonth %>" />
           <input type="hidden" name="date" value="<%= selectedDate %>" />
@@ -44,10 +44,10 @@
           <input type="hidden" name="tgUserId" value="<%= telegramUserId %>" />
           <input type="hidden" name="tgName" value="<%= telegramName %>" />
           <input type="hidden" name="tgUsername" value="<%= telegramUsername %>" />
-          <input type="hidden" name="type" value="<%= draftEntry.type %>" />
-          <input type="hidden" name="amount" value="<%= draftEntry.amount %>" />
-          <input type="hidden" name="category" value="<%= draftEntry.category %>" />
-          <input type="hidden" name="note" value="<%= draftEntry.note %>" />
+          <input type="hidden" name="type" value="<%= draftEntry.type %>" data-draft-target="type" />
+          <input type="hidden" name="amount" value="<%= draftEntry.amount %>" data-draft-target="amount" />
+          <input type="hidden" name="category" value="<%= draftEntry.category %>" data-draft-target="category" />
+          <input type="hidden" name="note" value="<%= draftEntry.note %>" data-draft-target="note" />
           <label class="currency-field">
             <span>Valyuta</span>
             <select name="currency" onchange="this.form.submit()">
@@ -71,7 +71,7 @@
             <% } %>
           </div>
 
-          <form method="post" action="/entries" class="entry-form">
+          <form method="post" action="/entries" class="entry-form" id="entryForm">
             <input type="hidden" name="userId" value="<%= user.id %>" />
             <input type="hidden" name="month" value="<%= currentMonth %>" />
             <input type="hidden" name="view" value="<%= viewMode %>" />
@@ -84,15 +84,15 @@
 
             <div class="type-tabs type-tabs-3">
               <label class="type-option expense">
-                <input type="radio" name="type" value="expense" <%= draftEntry.type === "expense" ? "checked" : "" %> />
+                <input type="radio" name="type" value="expense" <%= draftEntry.type === "expense" ? "checked" : "" %> data-draft-source="type" />
                 <span>Xarajat</span>
               </label>
               <label class="type-option income">
-                <input type="radio" name="type" value="income" <%= draftEntry.type === "income" ? "checked" : "" %> />
+                <input type="radio" name="type" value="income" <%= draftEntry.type === "income" ? "checked" : "" %> data-draft-source="type" />
                 <span>Tushum</span>
               </label>
               <label class="type-option debt">
-                <input type="radio" name="type" value="debt" <%= draftEntry.type === "debt" ? "checked" : "" %> />
+                <input type="radio" name="type" value="debt" <%= draftEntry.type === "debt" ? "checked" : "" %> data-draft-source="type" />
                 <span>Qarz</span>
               </label>
             </div>
@@ -100,18 +100,18 @@
             <div class="form-grid">
               <label>
                 <span>Miqdor</span>
-                <input type="number" name="amount" step="0.01" min="0.01" placeholder="25000" value="<%= draftEntry.amount %>" required />
+                <input type="number" name="amount" step="0.01" min="0.01" placeholder="25000" value="<%= draftEntry.amount %>" required data-draft-source="amount" />
               </label>
             </div>
 
             <label>
               <span>Toifa</span>
-              <input type="text" name="category" placeholder="Ovqat, Maosh, Yo'l, Qarz" value="<%= draftEntry.category %>" required />
+              <input type="text" name="category" placeholder="Ovqat, Maosh, Yo'l, Qarz" value="<%= draftEntry.category %>" required data-draft-source="category" />
             </label>
 
             <label>
               <span>Izoh</span>
-              <input type="text" name="note" placeholder="Ixtiyoriy izoh" value="<%= draftEntry.note %>" />
+              <input type="text" name="note" placeholder="Ixtiyoriy izoh" value="<%= draftEntry.note %>" data-draft-source="note" />
             </label>
 
             <div class="form-actions">
@@ -230,6 +230,31 @@
             window.location.replace(`${window.location.pathname}?${params.toString()}`);
           }
         }
+      }
+
+      const currencyForm = document.getElementById("currencyForm");
+      const entryForm = document.getElementById("entryForm");
+      if (currencyForm && entryForm) {
+        const syncDraft = () => {
+          const checkedType = entryForm.querySelector('[data-draft-source="type"]:checked');
+          const typeTarget = currencyForm.querySelector('[data-draft-target="type"]');
+          if (typeTarget) {
+            typeTarget.value = checkedType ? checkedType.value : "";
+          }
+
+          ["amount", "category", "note"].forEach((name) => {
+            const source = entryForm.querySelector(`[data-draft-source="${name}"]`);
+            const target = currencyForm.querySelector(`[data-draft-target="${name}"]`);
+            if (source && target) {
+              target.value = source.value;
+            }
+          });
+        };
+
+        entryForm.addEventListener("input", syncDraft);
+        entryForm.addEventListener("change", syncDraft);
+        currencyForm.addEventListener("submit", syncDraft);
+        syncDraft();
       }
     </script>
   </body>

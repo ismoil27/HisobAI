@@ -120,6 +120,18 @@ label span,
   gap: 8px;
 }
 
+.hero-heading {
+  display: grid;
+  gap: 6px;
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .hero-actions {
   display: grid;
   gap: 6px;
@@ -696,6 +708,10 @@ label span,
     justify-content: space-between;
     gap: 12px;
     align-items: flex-start;
+  }
+
+  .title-row {
+    gap: 10px;
   }
 
   .header-pills {
