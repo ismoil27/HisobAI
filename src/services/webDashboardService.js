@@ -18,6 +18,7 @@ import {
   updateTransaction
 } from "../repositories/transactionRepository.js";
 import { getSummaryData } from "./summaryService.js";
+import { convertTransactionsTotal } from "./exchangeRateService.js";
 import { compactDate, compactTime, formatMoney } from "../utils/format.js";
 import { dayjs, getUzbekMonthLabel, getUzbekWeekdays, monthBounds, parseDateInput } from "../utils/dates.js";
 
@@ -71,7 +72,7 @@ function buildDraftEntry({ editEntry, draftType, draftAmount, draftCategory, dra
   };
 }
 
-export function buildDashboardViewModel({
+export async function buildDashboardViewModel({
   user,
   monthText,
   selectedDate,
@@ -92,6 +93,7 @@ export function buildDashboardViewModel({
   const monthData = monthBounds(month, user.timezone);
   const activity = getMonthActivity(user.id, compactDate(monthData.start), compactDate(monthData.end));
   const entries = getTransactionsByDate(user.id, compactDate(activeDate));
+  const todayEntries = getTransactionsByDate(user.id, compactDate(now));
   const todayTotals = getDailyTotals(user.id, compactDate(now));
   const monthSummary = getSummaryData(user.id, "month", user.timezone, user.currency || "UZS");
   const editEntry = editEntryId ? getTransactionById(Number(editEntryId), user.id) : null;
@@ -136,6 +138,17 @@ export function buildDashboardViewModel({
     weeks.push(row);
   }
 
+  let convertedTodayExpense = Number(todayTotals.expense_total || 0);
+  try {
+    convertedTodayExpense = await convertTransactionsTotal(
+      todayEntries,
+      user.currency || "UZS",
+      (item) => item.type === "expense"
+    );
+  } catch (_error) {
+    convertedTodayExpense = Number(todayTotals.expense_total || 0);
+  }
+
   return {
     viewMode: viewMode === "month" ? "month" : "today",
     flashMessage,
@@ -151,7 +164,7 @@ export function buildDashboardViewModel({
     weekdayLabels: getUzbekWeekdays(),
     entries,
     todayTotals: {
-      expense: Number(todayTotals.expense_total || 0),
+      expense: convertedTodayExpense,
       income: Number(todayTotals.income_total || 0),
       debt: Number(todayTotals.debt_total || 0)
     },
@@ -239,6 +252,7 @@ export function saveDashboardTransaction({ user, entryId, type, amount, category
     user_id: user.id,
     type,
     amount: numericAmount,
+    transaction_currency: user.currency || "UZS",
     category: category.trim(),
     note: note?.trim() || "",
     transaction_date: compactDate(parsedDate),

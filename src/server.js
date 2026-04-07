@@ -33,14 +33,15 @@ export function createServer() {
   app.use(express.urlencoded({ extended: false }));
   app.use(express.static(path.join(__dirname, "..", "public")));
 
-  app.get("/", (req, res) => {
+  app.get("/", async (req, res, next) => {
+    try {
     const user = resolveDashboardUser({
       userId: req.query.userId,
       telegramUserId: req.query.tgUserId,
       firstName: req.query.tgName,
       username: req.query.tgUsername
     });
-    const viewModel = buildDashboardViewModel({
+    const viewModel = await buildDashboardViewModel({
       user,
       monthText: req.query.month,
       selectedDate: req.query.date,
@@ -57,6 +58,9 @@ export function createServer() {
     });
 
     res.render("dashboard", viewModel);
+    } catch (error) {
+      next(error);
+    }
   });
 
   app.get("/admin", (req, res) => {
@@ -74,7 +78,8 @@ export function createServer() {
     res.render("admin", viewModel);
   });
 
-  app.post("/entries", (req, res) => {
+  app.post("/entries", async (req, res, next) => {
+    try {
     const user = resolveDashboardUser({
       userId: req.body.userId,
       telegramUserId: req.body.tgUserId,
@@ -93,7 +98,7 @@ export function createServer() {
     });
 
     if (!result.ok) {
-      const viewModel = buildDashboardViewModel({
+      const viewModel = await buildDashboardViewModel({
         user,
         monthText: req.body.month,
         selectedDate: req.body.transactionDate,
@@ -120,6 +125,9 @@ export function createServer() {
     });
 
     res.redirect(`/?${params.toString()}`);
+    } catch (error) {
+      next(error);
+    }
   });
 
   app.post("/entries/:id/delete", (req, res) => {

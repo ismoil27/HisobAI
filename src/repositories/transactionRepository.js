@@ -1,14 +1,15 @@
 import { db } from "../db.js";
 
 const insertStmt = db.prepare(`
-  INSERT INTO transactions (user_id, type, amount, category, note, transaction_date, transaction_time)
-  VALUES (@user_id, @type, @amount, @category, @note, @transaction_date, @transaction_time)
+  INSERT INTO transactions (user_id, type, amount, transaction_currency, category, note, transaction_date, transaction_time)
+  VALUES (@user_id, @type, @amount, @transaction_currency, @category, @note, @transaction_date, @transaction_time)
 `);
 
 const updateStmt = db.prepare(`
   UPDATE transactions
   SET type = @type,
       amount = @amount,
+      transaction_currency = @transaction_currency,
       category = @category,
       note = @note,
       transaction_date = @transaction_date,
