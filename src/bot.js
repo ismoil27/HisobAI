@@ -258,7 +258,7 @@ export function createBot() {
   bot.action(/^summary:(week|month)$/, async (ctx) => {
     const user = getUserRecord(ctx);
     const kind = ctx.match[1];
-    const message = buildSummaryMessage(user.id, kind, user.timezone);
+    const message = buildSummaryMessage(user.id, kind, user.timezone, user.currency || "UZS");
     await ctx.answerCbQuery();
     await ctx.reply(message, mainMenuKeyboard());
   });

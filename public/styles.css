@@ -127,6 +127,12 @@ label span,
   gap: 8px;
 }
 
+.view-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
 .month-btn,
 .ghost-btn,
 .name-pill {
@@ -148,6 +154,36 @@ label span,
 .month-btn {
   font-size: 1.25rem;
   width: 40px;
+}
+
+.active-toggle {
+  background: rgba(45, 140, 255, 0.16);
+  border-color: rgba(45, 140, 255, 0.38);
+}
+
+.currency-form {
+  margin-top: 12px;
+}
+
+.currency-field {
+  display: grid;
+  gap: 6px;
+  max-width: 180px;
+}
+
+.currency-field span {
+  color: var(--muted);
+  font-size: 11px;
+  font-family: "IBM Plex Mono", monospace;
+}
+
+.currency-field select {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--surface-3);
+  color: var(--text);
+  padding: 11px 12px;
 }
 
 .stats-grid {
@@ -174,6 +210,10 @@ label span,
 
 .mini-stat strong {
   font-size: 1.3rem;
+}
+
+.big-stat strong {
+  font-size: 1.6rem;
 }
 
 .mini-stat.income {
@@ -336,6 +376,14 @@ label span,
   gap: 10px;
 }
 
+.prominent-entry .entry-amount strong {
+  font-size: 1.2rem;
+}
+
+.prominent-entry .entry-note {
+  font-size: 12px;
+}
+
 .entry-card.expense {
   border-left: 4px solid var(--expense);
 }
@@ -467,6 +515,10 @@ label span,
 
 .calendar-grid {
   gap: 6px;
+}
+
+.calendar-expanded .calendar-cell {
+  min-height: 92px;
 }
 
 .calendar-cell {
@@ -621,7 +673,8 @@ label span,
 
   .hero-actions,
   .form-grid-3,
-  .stats-grid {
+  .stats-grid,
+  .view-switch {
     grid-template-columns: 1fr;
   }
 

@@ -3,7 +3,8 @@ import {
   ensureWebUser,
   getAllUsers,
   getUserById,
-  getUserByTelegramId
+  getUserByTelegramId,
+  updateUserCurrency
 } from "../repositories/userRepository.js";
 import {
   createTransaction,
@@ -102,6 +103,7 @@ export function buildDashboardViewModel({
   selectedDate,
   flashMessage,
   editEntryId,
+  viewMode,
   telegramUserId,
   telegramName,
   telegramUsername
@@ -113,7 +115,7 @@ export function buildDashboardViewModel({
   const activity = getMonthActivity(user.id, compactDate(monthData.start), compactDate(monthData.end));
   const entries = getTransactionsByDate(user.id, compactDate(activeDate));
   const dailyTotals = getDailyTotals(user.id, compactDate(activeDate));
-  const monthSummary = getSummaryData(user.id, "month", user.timezone);
+  const monthSummary = getSummaryData(user.id, "month", user.timezone, user.currency || "UZS");
   const editEntry = editEntryId ? getTransactionById(Number(editEntryId), user.id) : null;
   const activityMap = new Map(activity.map((item) => [item.transaction_date, item]));
 
@@ -159,6 +161,7 @@ export function buildDashboardViewModel({
   const debtEntries = entries.filter((entry) => entry.type === "debt");
 
   return {
+    viewMode: viewMode === "month" ? "month" : "today",
     flashMessage,
     user,
     currentMonth: month.format("YYYY-MM"),
@@ -186,7 +189,8 @@ export function buildDashboardViewModel({
     incomeEntriesCount: incomeEntries.length,
     debtEntriesCount: debtEntries.length,
     balance: Number(dailyTotals.income_total) - Number(dailyTotals.expense_total) - Number(dailyTotals.debt_total),
-    formatMoney
+    currencies: ["UZS", "USD", "KRW", "RUB", "EUR"],
+    formatMoney: (amount) => formatMoney(amount, user.currency || "UZS")
   };
 }
 
@@ -198,7 +202,7 @@ export function buildAdminViewModel({ viewerUsername, selectedUserId }) {
     null;
 
   const userCards = users.map((user) => {
-    const monthSummary = getSummaryData(user.id, "month", user.timezone);
+    const monthSummary = getSummaryData(user.id, "month", user.timezone, user.currency || "UZS");
     const latestEntries = getLatestTransactionsByUser(user.id, 8);
     return {
       ...user,
@@ -217,7 +221,7 @@ export function buildAdminViewModel({ viewerUsername, selectedUserId }) {
     viewerUsername,
     users: userCards,
     selectedUser: selectedDetail,
-    formatMoney
+    formatMoney: (amount, currency = "UZS") => formatMoney(amount, currency)
   };
 }
 
@@ -273,6 +277,21 @@ export function saveDashboardTransaction({ user, entryId, type, amount, category
     ok: true,
     message: "Yozuv saqlandi.",
     transactionDate: compactDate(parsedDate)
+  };
+}
+
+export function saveDashboardCurrency({ user, currency }) {
+  const normalized = String(currency || "").toUpperCase();
+  const allowed = new Set(["UZS", "USD", "KRW", "RUB", "EUR"]);
+
+  if (!allowed.has(normalized)) {
+    return { ok: false, message: "Valyuta noto'g'ri." };
+  }
+
+  updateUserCurrency(user.id, normalized);
+  return {
+    ok: true,
+    message: "Valyuta saqlandi."
   };
 }
 

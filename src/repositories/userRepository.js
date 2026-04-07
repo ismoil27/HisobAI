@@ -13,8 +13,8 @@ const findByIdStmt = db.prepare(`
 `);
 
 const upsertStmt = db.prepare(`
-  INSERT INTO users (telegram_id, chat_id, first_name, username, timezone, updated_at)
-  VALUES (@telegram_id, @chat_id, @first_name, @username, @timezone, CURRENT_TIMESTAMP)
+  INSERT INTO users (telegram_id, chat_id, first_name, username, timezone, currency, updated_at)
+  VALUES (@telegram_id, @chat_id, @first_name, @username, @timezone, @currency, CURRENT_TIMESTAMP)
   ON CONFLICT(telegram_id)
   DO UPDATE SET
     chat_id = excluded.chat_id,
@@ -24,13 +24,20 @@ const upsertStmt = db.prepare(`
     updated_at = CURRENT_TIMESTAMP
 `);
 
+const updateCurrencyStmt = db.prepare(`
+  UPDATE users
+  SET currency = ?, updated_at = CURRENT_TIMESTAMP
+  WHERE id = ?
+`);
+
 export function upsertUserFromTelegram(from, chatId, timezone) {
   upsertStmt.run({
     telegram_id: String(from.id),
     chat_id: String(chatId),
     first_name: from.first_name || "",
     username: from.username || "",
-    timezone
+    timezone,
+    currency: "UZS"
   });
 
   return findByTelegramIdStmt.get(String(from.id));
@@ -44,13 +51,14 @@ export function getUserById(id) {
   return findByIdStmt.get(id);
 }
 
-export function ensureWebUser({ telegramId, firstName, username, timezone }) {
+export function ensureWebUser({ telegramId, firstName, username, timezone, currency = "UZS" }) {
   upsertStmt.run({
     telegram_id: String(telegramId),
     chat_id: String(telegramId),
     first_name: firstName || "",
     username: username || "",
-    timezone
+    timezone,
+    currency
   });
 
   return findByTelegramIdStmt.get(String(telegramId));
@@ -58,4 +66,8 @@ export function ensureWebUser({ telegramId, firstName, username, timezone }) {
 
 export function getAllUsers() {
   return db.prepare("SELECT * FROM users").all();
+}
+
+export function updateUserCurrency(userId, currency) {
+  return updateCurrencyStmt.run(currency, userId);
 }

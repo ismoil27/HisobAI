@@ -8,6 +8,7 @@ import {
   removeDashboardTransaction,
   isAdminUsername,
   resolveDashboardUser,
+  saveDashboardCurrency,
   saveDashboardTransaction
 } from "./services/webDashboardService.js";
 
@@ -36,6 +37,7 @@ export function createServer() {
       selectedDate: req.query.date,
       flashMessage: req.query.message || "",
       editEntryId: req.query.editId,
+      viewMode: req.query.view,
       telegramUserId: req.query.tgUserId,
       telegramName: req.query.tgName,
       telegramUsername: req.query.tgUsername
@@ -84,6 +86,7 @@ export function createServer() {
         selectedDate: req.body.transactionDate,
         flashMessage: result.message,
         editEntryId: req.body.entryId,
+        viewMode: req.body.view,
         telegramUserId: req.body.tgUserId,
         telegramName: req.body.tgName,
         telegramUsername: req.body.tgUsername
@@ -95,6 +98,7 @@ export function createServer() {
     const params = new URLSearchParams({
       month: req.body.month,
       date: result.transactionDate,
+      view: req.body.view || "today",
       message: result.message,
       tgUserId: req.body.tgUserId || "",
       tgName: req.body.tgName || "",
@@ -118,6 +122,33 @@ export function createServer() {
     const params = new URLSearchParams({
       month: req.body.month,
       date: req.body.date,
+      view: req.body.view || "today",
+      message: result.message,
+      tgUserId: req.body.tgUserId || "",
+      tgName: req.body.tgName || "",
+      tgUsername: req.body.tgUsername || ""
+    });
+
+    res.redirect(`/?${params.toString()}`);
+  });
+
+  app.post("/settings/currency", (req, res) => {
+    const user = resolveDashboardUser({
+      userId: req.body.userId,
+      telegramUserId: req.body.tgUserId,
+      firstName: req.body.tgName,
+      username: req.body.tgUsername
+    });
+
+    const result = saveDashboardCurrency({
+      user,
+      currency: req.body.currency
+    });
+
+    const params = new URLSearchParams({
+      month: req.body.month,
+      date: req.body.date,
+      view: req.body.view || "today",
       message: result.message,
       tgUserId: req.body.tgUserId || "",
       tgName: req.body.tgName || "",

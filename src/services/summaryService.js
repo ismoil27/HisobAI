@@ -50,14 +50,14 @@ export function buildComparisonText(currentExpense, previousExpense, currentLabe
   return `${currentLabel} oyida ${previousLabel} oyiga nisbatan ${percent}% ko'p xarajat qildingiz.`;
 }
 
-export function topCategories(categoryMap) {
+export function topCategories(categoryMap, currency) {
   return [...categoryMap.entries()]
     .sort((a, b) => b[1] - a[1])
     .slice(0, 3)
-    .map(([category, amount]) => `${category}: ${formatMoney(amount)}`);
+    .map(([category, amount]) => `${category}: ${formatMoney(amount, currency)}`);
 }
 
-export function getSummaryData(userId, kind, timezoneName) {
+export function getSummaryData(userId, kind, timezoneName, currency = "UZS") {
   const bounds = summaryBounds(kind, timezoneName);
   const currentTransactions = getTransactionsForRange(
     userId,
@@ -78,7 +78,7 @@ export function getSummaryData(userId, kind, timezoneName) {
     bounds.current.label,
     bounds.previous.label
   );
-  const categories = topCategories(current.categories);
+  const categories = topCategories(current.categories, currency);
 
   return {
     bounds,
@@ -89,16 +89,16 @@ export function getSummaryData(userId, kind, timezoneName) {
   };
 }
 
-export function buildSummaryMessage(userId, kind, timezoneName) {
-  const { bounds, current, comparison, categories } = getSummaryData(userId, kind, timezoneName);
+export function buildSummaryMessage(userId, kind, timezoneName, currency = "UZS") {
+  const { bounds, current, comparison, categories } = getSummaryData(userId, kind, timezoneName, currency);
 
   const lines = [
     `${bounds.current.label} bo'yicha hisobot`,
     ``,
-    `Xarajat: ${formatMoney(current.expense)}`,
-    `Tushum: ${formatMoney(current.income)}`,
-    `Qarz: ${formatMoney(current.debt)}`,
-    `Balans: ${formatMoney(current.income - current.expense - current.debt)}`
+    `Xarajat: ${formatMoney(current.expense, currency)}`,
+    `Tushum: ${formatMoney(current.income, currency)}`,
+    `Qarz: ${formatMoney(current.debt, currency)}`,
+    `Balans: ${formatMoney(current.income - current.expense - current.debt, currency)}`
   ];
 
   if (comparison) {

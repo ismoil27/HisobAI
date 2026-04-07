@@ -20,6 +20,7 @@ db.exec(`
     first_name TEXT,
     username TEXT,
     timezone TEXT NOT NULL DEFAULT 'Asia/Seoul',
+    currency TEXT NOT NULL DEFAULT 'UZS',
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
@@ -79,7 +80,30 @@ const transactionTimeColumn = db
   .find((column) => column.name === "transaction_time");
 
 if (!transactionTimeColumn) {
-  db.exec(`
-    ALTER TABLE transactions ADD COLUMN transaction_time TEXT NOT NULL DEFAULT '12:00';
-  `);
+  try {
+    db.exec(`
+      ALTER TABLE transactions ADD COLUMN transaction_time TEXT NOT NULL DEFAULT '12:00';
+    `);
+  } catch (error) {
+    if (!String(error.message || error).includes("duplicate column name")) {
+      throw error;
+    }
+  }
+}
+
+const userCurrencyColumn = db
+  .prepare("PRAGMA table_info(users)")
+  .all()
+  .find((column) => column.name === "currency");
+
+if (!userCurrencyColumn) {
+  try {
+    db.exec(`
+      ALTER TABLE users ADD COLUMN currency TEXT NOT NULL DEFAULT 'UZS';
+    `);
+  } catch (error) {
+    if (!String(error.message || error).includes("duplicate column name")) {
+      throw error;
+    }
+  }
 }

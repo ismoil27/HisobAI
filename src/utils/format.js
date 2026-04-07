@@ -1,5 +1,7 @@
-export function formatMoney(amount) {
+export function formatMoney(amount, currency = "UZS") {
   return new Intl.NumberFormat("uz-UZ", {
+    style: "currency",
+    currency,
     maximumFractionDigits: 2
   }).format(Number(amount || 0));
 }
