@@ -44,8 +44,39 @@ input {
   padding: 8px 8px 12px;
 }
 
-.surface,
-.flash-banner {
+.toast-stack {
+  position: sticky;
+  top: 8px;
+  z-index: 60;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  margin-bottom: 8px;
+}
+
+.toast-popup {
+  min-width: 180px;
+  max-width: min(92vw, 360px);
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(99, 213, 122, 0.22);
+  background: rgba(18, 29, 22, 0.94);
+  color: #dff7e4;
+  box-shadow: 0 16px 28px rgba(0, 0, 0, 0.34);
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 220ms ease, transform 220ms ease;
+}
+
+.toast-hide {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+.surface {
   background: linear-gradient(180deg, rgba(28, 33, 41, 0.98), rgba(21, 26, 33, 0.98));
   border: 1px solid var(--line);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.26);
@@ -54,14 +85,6 @@ input {
 .surface {
   border-radius: 16px;
   padding: 11px;
-}
-
-.flash-banner {
-  border-radius: 12px;
-  padding: 8px 10px;
-  margin-bottom: 8px;
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 11px;
 }
 
 .surface-title-wrap p,
@@ -125,6 +148,11 @@ label span,
   gap: 6px;
 }
 
+.heading-stack {
+  display: grid;
+  gap: 4px;
+}
+
 .title-row {
   display: flex;
   align-items: center;
@@ -181,10 +209,6 @@ label span,
 .active-toggle {
   background: rgba(45, 140, 255, 0.16);
   border-color: rgba(45, 140, 255, 0.38);
-}
-
-.currency-form {
-  margin-top: 10px;
 }
 
 .currency-field {
@@ -299,6 +323,23 @@ label span,
 .form-grid {
   display: grid;
   gap: 7px;
+}
+
+.amount-currency-grid {
+  grid-template-columns: minmax(0, 1fr) 112px;
+  align-items: end;
+}
+
+.inline-currency-wrap {
+  display: grid;
+}
+
+.inline-currency-form {
+  margin: 0;
+}
+
+.inline-currency-form select {
+  min-height: 44px;
 }
 
 .form-grid-3 {
@@ -1004,6 +1045,10 @@ label span,
   .form-grid-3,
   .stats-grid {
     grid-template-columns: 1fr;
+  }
+
+  .amount-currency-grid {
+    grid-template-columns: minmax(0, 1fr) 96px;
   }
 
   .calendar-focus-row {

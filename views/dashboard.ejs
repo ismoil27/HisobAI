@@ -16,15 +16,21 @@
   <body>
     <div class="app-shell">
       <% if (flashMessage) { %>
-        <section class="flash-banner"><%= flashMessage %></section>
+        <div class="toast-stack">
+          <div class="toast-popup" id="toastPopup" role="status" aria-live="polite">
+            <span><%= flashMessage %></span>
+          </div>
+        </div>
       <% } %>
 
       <section class="surface hero-surface">
         <div class="hero-top">
           <div class="hero-heading">
-            <p class="eyebrow"><%= viewMode === "month" ? "TO'LIQ OY" : "BUGUNGI HISOB" %></p>
-            <div class="title-row">
-              <h1><%= viewMode === "month" ? monthLabel : selectedDateLabel %></h1>
+            <div class="title-row title-row-compact">
+              <div class="heading-stack">
+                <p class="eyebrow"><%= viewMode === "month" ? "TO'LIQ OY" : "BUGUNGI HISOB" %></p>
+                <h1><%= viewMode === "month" ? monthLabel : selectedDateLabel %></h1>
+              </div>
               <div class="header-pills">
                 <a
                   class="ghost-btn icon-pill <%= viewMode === "today" ? "active-toggle" : "" %>"
@@ -48,29 +54,21 @@
             <p class="hero-subtitle"><%= telegramName %> · <%= currentTimeLabel %> · <%= user.currency || "UZS" %></p>
           </div>
         </div>
-
-        <form method="post" action="/settings/currency" class="currency-form" id="currencyForm">
-          <input type="hidden" name="userId" value="<%= user.id %>" />
-          <input type="hidden" name="month" value="<%= currentMonth %>" />
-          <input type="hidden" name="date" value="<%= selectedDate %>" />
-          <input type="hidden" name="view" value="<%= viewMode %>" />
-          <input type="hidden" name="tgUserId" value="<%= telegramUserId %>" />
-          <input type="hidden" name="tgName" value="<%= telegramName %>" />
-          <input type="hidden" name="tgUsername" value="<%= telegramUsername %>" />
-          <input type="hidden" name="type" value="<%= draftEntry.type %>" data-draft-target="type" />
-          <input type="hidden" name="amount" value="<%= draftEntry.amount %>" data-draft-target="amount" />
-          <input type="hidden" name="category" value="<%= draftEntry.category %>" data-draft-target="category" />
-          <input type="hidden" name="note" value="<%= draftEntry.note %>" data-draft-target="note" />
-          <label class="currency-field">
-            <span>Valyuta</span>
-            <select name="currency" onchange="this.form.submit()">
-              <% currencies.forEach((currency) => { %>
-                <option value="<%= currency %>" <%= (user.currency || "UZS") === currency ? "selected" : "" %>><%= currency %></option>
-              <% }) %>
-            </select>
-          </label>
-        </form>
       </section>
+
+      <form method="post" action="/settings/currency" class="inline-currency-form-shell" id="currencyForm">
+        <input type="hidden" name="userId" value="<%= user.id %>" />
+        <input type="hidden" name="month" value="<%= currentMonth %>" />
+        <input type="hidden" name="date" value="<%= selectedDate %>" />
+        <input type="hidden" name="view" value="<%= viewMode %>" />
+        <input type="hidden" name="tgUserId" value="<%= telegramUserId %>" />
+        <input type="hidden" name="tgName" value="<%= telegramName %>" />
+        <input type="hidden" name="tgUsername" value="<%= telegramUsername %>" />
+        <input type="hidden" name="type" value="<%= draftEntry.type %>" data-draft-target="type" />
+        <input type="hidden" name="amount" value="<%= draftEntry.amount %>" data-draft-target="amount" />
+        <input type="hidden" name="category" value="<%= draftEntry.category %>" data-draft-target="category" />
+        <input type="hidden" name="note" value="<%= draftEntry.note %>" data-draft-target="note" />
+      </form>
 
       <% if (viewMode === "month") { %>
         <section class="surface calendar-surface calendar-priority-surface calendar-expanded">
@@ -179,11 +177,18 @@
               </label>
             </div>
 
-            <div class="form-grid">
+            <div class="form-grid amount-currency-grid">
               <label>
                 <span>Miqdor</span>
                 <input type="number" name="amount" step="0.01" min="0.01" placeholder="25000" value="<%= draftEntry.amount %>" required data-draft-source="amount" />
               </label>
+              <div class="inline-currency-wrap">
+                <select name="currency" form="currencyForm" onchange="this.form.submit()" aria-label="Currency">
+                  <% currencies.forEach((currency) => { %>
+                    <option value="<%= currency %>" <%= (user.currency || "UZS") === currency ? "selected" : "" %>><%= currency %></option>
+                  <% }) %>
+                </select>
+              </div>
             </div>
 
             <label>
@@ -341,6 +346,21 @@
       const categoryToggle = document.getElementById("categoryToggle");
       const categoryMenu = document.getElementById("categoryMenu");
       const categoryCombo = document.getElementById("categoryCombo");
+      const toastPopup = document.getElementById("toastPopup");
+
+      if (toastPopup) {
+        window.setTimeout(() => {
+          toastPopup.classList.add("toast-hide");
+
+          const params = new URLSearchParams(window.location.search);
+          params.delete("message");
+          const nextQuery = params.toString();
+          const nextUrl = nextQuery ? `${window.location.pathname}?${nextQuery}` : window.location.pathname;
+          window.setTimeout(() => {
+            window.history.replaceState({}, "", nextUrl);
+          }, 260);
+        }, 3500);
+      }
 
       if (currencyForm && entryForm) {
         const getCurrentType = () => {
