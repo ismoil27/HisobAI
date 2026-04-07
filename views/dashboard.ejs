@@ -54,28 +54,6 @@
           </label>
         </form>
 
-        <div class="stats-grid">
-          <article class="mini-stat income big-stat">
-            <span>Tushum</span>
-            <strong><%= formatMoney(dailyTotals.income_total) %></strong>
-            <small><%= incomeEntriesCount %> ta yozuv · bugun</small>
-          </article>
-          <article class="mini-stat expense big-stat">
-            <span>Xarajat</span>
-            <strong><%= formatMoney(dailyTotals.expense_total) %></strong>
-            <small><%= expenseEntriesCount %> ta yozuv · bugun</small>
-          </article>
-          <article class="mini-stat debt">
-            <span>Qarz</span>
-            <strong><%= formatMoney(dailyTotals.debt_total) %></strong>
-            <small><%= debtEntriesCount %> ta yozuv</small>
-          </article>
-          <article class="mini-stat balance">
-            <span>Balans</span>
-            <strong><%= formatMoney(balance) %></strong>
-            <small>Kun yakuni</small>
-          </article>
-        </div>
       </section>
 
       <% if (viewMode === "today") { %>
@@ -121,7 +99,7 @@
                 </label>
                 <label>
                   <span>Soat</span>
-                  <input type="time" name="transactionTime" value="<%= defaultTime %>" required />
+                  <input type="text" name="transactionTime" inputmode="numeric" pattern="^\\d{2}:\\d{2}$" placeholder="10:49" value="<%= defaultTime %>" required />
                 </label>
               </div>
 
@@ -193,54 +171,6 @@
           </section>
         </section>
       <% } %>
-
-      <section class="surface analysis-surface">
-        <div class="surface-title-wrap compact-title">
-          <h2>Tahlil</h2>
-          <% if (monthSummary.comparison) { %>
-            <p><%= monthSummary.comparison %></p>
-          <% } else { %>
-            <p>Oylik ko'rsatkichlar shu yerda ko'rinadi.</p>
-          <% } %>
-        </div>
-
-        <div class="stats-grid month-stats">
-          <article class="mini-stat income">
-            <span>Oylik tushum</span>
-            <strong><%= formatMoney(monthSummary.current.income) %></strong>
-          </article>
-          <article class="mini-stat expense">
-            <span>Oylik xarajat</span>
-            <strong><%= formatMoney(monthSummary.current.expense) %></strong>
-          </article>
-          <article class="mini-stat debt">
-            <span>Oylik qarz</span>
-            <strong><%= formatMoney(monthSummary.current.debt) %></strong>
-          </article>
-          <article class="mini-stat balance">
-            <span>Oylik balans</span>
-            <strong><%= formatMoney(monthSummary.current.income - monthSummary.current.expense - monthSummary.current.debt) %></strong>
-          </article>
-        </div>
-
-        <div class="breakdown-list">
-          <% if (categoryBreakdown.length === 0) { %>
-            <div class="empty-state">Bugungi xarajatlar bo'yicha toifalar hali yo'q.</div>
-          <% } else { %>
-            <% categoryBreakdown.forEach((item) => { %>
-              <article class="breakdown-item">
-                <div class="breakdown-label">
-                  <strong><%= item.category %></strong>
-                  <span><%= formatMoney(item.amount) %> · <%= item.percent %>%</span>
-                </div>
-                <div class="progress-track">
-                  <span class="progress-bar" style="width:<%= item.percent %>%"></span>
-                </div>
-              </article>
-            <% }) %>
-          <% } %>
-        </div>
-      </section>
 
       <section class="surface calendar-surface <%= viewMode === "month" ? "calendar-expanded" : "" %>">
         <div class="surface-header">
