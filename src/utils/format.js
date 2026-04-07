@@ -1,8 +1,23 @@
+const currencyLocales = {
+  UZS: "uz-UZ",
+  USD: "en-US",
+  KRW: "ko-KR",
+  RUB: "ru-RU",
+  EUR: "de-DE"
+};
+
+const zeroDecimalCurrencies = new Set(["KRW", "UZS"]);
+
 export function formatMoney(amount, currency = "UZS") {
-  return new Intl.NumberFormat("uz-UZ", {
+  const normalizedCurrency = String(currency || "UZS").toUpperCase();
+  const locale = currencyLocales[normalizedCurrency] || "en-US";
+  const fractionDigits = zeroDecimalCurrencies.has(normalizedCurrency) ? 0 : 2;
+
+  return new Intl.NumberFormat(locale, {
     style: "currency",
-    currency,
-    maximumFractionDigits: 2
+    currency: normalizedCurrency,
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits
   }).format(Number(amount || 0));
 }
 

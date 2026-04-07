@@ -391,21 +391,32 @@ label span,
   gap: 8px;
 }
 
+.entries-surface {
+  max-height: 360px;
+  overflow: hidden;
+}
+
+.entries-surface .entry-list {
+  max-height: 280px;
+  overflow: auto;
+  padding-right: 2px;
+}
+
 .entry-card {
   border-radius: 12px;
-  padding: 10px;
+  padding: 9px;
   background: var(--surface-2);
   border: 1px solid var(--line);
   display: grid;
-  gap: 8px;
+  gap: 6px;
 }
 
 .prominent-entry .entry-amount strong {
-  font-size: 1.05rem;
+  font-size: 0.98rem;
 }
 
 .prominent-entry .entry-note {
-  font-size: 11px;
+  font-size: 10px;
 }
 
 .entry-card.expense {
@@ -427,17 +438,18 @@ label span,
 
 .entry-category {
   font-weight: 700;
+  font-size: 0.95rem;
 }
 
 .entry-note {
-  margin-top: 4px;
+  margin-top: 3px;
   color: var(--muted);
   font-size: 10px;
 }
 
 .entry-side {
   display: grid;
-  gap: 6px;
+  gap: 5px;
   justify-items: start;
 }
 
@@ -447,12 +459,12 @@ label span,
 
 .entry-actions {
   display: flex;
-  gap: 6px;
+  gap: 5px;
   flex-wrap: wrap;
 }
 
 .micro-btn {
-  padding: 6px 9px;
+  padding: 5px 8px;
   font-size: 10px;
 }
 
@@ -791,6 +803,14 @@ label span,
     display: flex;
     justify-content: space-between;
     gap: 10px;
+  }
+
+  .entries-surface {
+    max-height: 520px;
+  }
+
+  .entries-surface .entry-list {
+    max-height: 430px;
   }
 
   .entry-side {
