@@ -106,7 +106,12 @@
 
             <label>
               <span>Toifa</span>
-              <input type="text" name="category" placeholder="Ovqat, Maosh, Yo'l, Qarz" value="<%= draftEntry.category %>" required data-draft-source="category" />
+              <div class="category-row">
+                <input type="text" name="category" placeholder="Ovqat, Maosh, Yo'l, Qarz" value="<%= draftEntry.category %>" required data-draft-source="category" id="categoryInput" />
+                <select class="category-history-select" id="categoryHistorySelect" aria-label="Toifa tarixi">
+                  <option value="">Tarixdan tanlang</option>
+                </select>
+              </div>
             </label>
 
             <label>
@@ -212,6 +217,8 @@
     </div>
 
     <script>
+      const categoryHistory = <%- JSON.stringify(categoryHistory || { expense: [], income: [], debt: [] }) %>;
+
       if (window.Telegram && window.Telegram.WebApp) {
         const app = window.Telegram.WebApp;
         app.ready();
@@ -234,12 +241,42 @@
 
       const currencyForm = document.getElementById("currencyForm");
       const entryForm = document.getElementById("entryForm");
+      const categoryInput = document.getElementById("categoryInput");
+      const categoryHistorySelect = document.getElementById("categoryHistorySelect");
       if (currencyForm && entryForm) {
-        const syncDraft = () => {
+        const getCurrentType = () => {
           const checkedType = entryForm.querySelector('[data-draft-source="type"]:checked');
+          return checkedType ? checkedType.value : "expense";
+        };
+
+        const renderCategoryHistory = () => {
+          if (!categoryHistorySelect) {
+            return;
+          }
+
+          const currentType = getCurrentType();
+          const items = Array.isArray(categoryHistory[currentType]) ? categoryHistory[currentType] : [];
+          const currentValue = categoryInput ? categoryInput.value.trim() : "";
+          const options = ['<option value="">Tarixdan tanlang</option>'];
+
+          items.forEach((item) => {
+            const safeValue = String(item.category || "")
+              .replace(/&/g, "&amp;")
+              .replace(/</g, "&lt;")
+              .replace(/>/g, "&gt;")
+              .replace(/"/g, "&quot;");
+            const selected = currentValue && currentValue === item.category ? ' selected' : "";
+            options.push(`<option value="${safeValue}"${selected}>${safeValue}</option>`);
+          });
+
+          categoryHistorySelect.innerHTML = options.join("");
+          categoryHistorySelect.disabled = items.length === 0;
+        };
+
+        const syncDraft = () => {
           const typeTarget = currencyForm.querySelector('[data-draft-target="type"]');
           if (typeTarget) {
-            typeTarget.value = checkedType ? checkedType.value : "";
+            typeTarget.value = getCurrentType();
           }
 
           ["amount", "category", "note"].forEach((name) => {
@@ -251,9 +288,24 @@
           });
         };
 
+        if (categoryHistorySelect && categoryInput) {
+          categoryHistorySelect.addEventListener("change", () => {
+            if (categoryHistorySelect.value) {
+              categoryInput.value = categoryHistorySelect.value;
+              syncDraft();
+            }
+          });
+        }
+
         entryForm.addEventListener("input", syncDraft);
-        entryForm.addEventListener("change", syncDraft);
+        entryForm.addEventListener("change", (event) => {
+          if (event.target && event.target.name === "type") {
+            renderCategoryHistory();
+          }
+          syncDraft();
+        });
         currencyForm.addEventListener("submit", syncDraft);
+        renderCategoryHistory();
         syncDraft();
       }
     </script>

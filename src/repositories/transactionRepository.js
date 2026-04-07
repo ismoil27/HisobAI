@@ -75,6 +75,19 @@ const totalsByDateStmt = db.prepare(`
   GROUP BY transaction_date
 `);
 
+const categoryHistoryStmt = db.prepare(`
+  SELECT
+    type,
+    category,
+    COUNT(*) AS usage_count,
+    MAX(transaction_date || ' ' || transaction_time) AS last_used_at
+  FROM transactions
+  WHERE user_id = ?
+    AND TRIM(COALESCE(category, '')) <> ''
+  GROUP BY type, category
+  ORDER BY last_used_at DESC, usage_count DESC, category COLLATE NOCASE ASC
+`);
+
 export function createTransaction(payload) {
   return insertStmt.run(payload);
 }
@@ -114,4 +127,31 @@ export function getDailyTotals(userId, date) {
     income_total: 0,
     debt_total: 0
   };
+}
+
+export function getCategoryHistoryByUser(userId, limitPerType = 12) {
+  const rows = categoryHistoryStmt.all(userId);
+  const grouped = {
+    expense: [],
+    income: [],
+    debt: []
+  };
+
+  for (const row of rows) {
+    if (!grouped[row.type]) {
+      continue;
+    }
+
+    if (grouped[row.type].length >= limitPerType) {
+      continue;
+    }
+
+    grouped[row.type].push({
+      category: row.category,
+      usageCount: Number(row.usage_count || 0),
+      lastUsedAt: row.last_used_at
+    });
+  }
+
+  return grouped;
 }

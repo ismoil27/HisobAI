@@ -9,6 +9,7 @@ import {
 import {
   createTransaction,
   deleteTransaction,
+  getCategoryHistoryByUser,
   getLatestTransactionsByUser,
   getMonthActivity,
   getTransactionById,
@@ -92,6 +93,7 @@ export function buildDashboardViewModel({
   const entries = getTransactionsByDate(user.id, compactDate(activeDate));
   const monthSummary = getSummaryData(user.id, "month", user.timezone, user.currency || "UZS");
   const editEntry = editEntryId ? getTransactionById(Number(editEntryId), user.id) : null;
+  const categoryHistory = getCategoryHistoryByUser(user.id);
   const activityMap = new Map(activity.map((item) => [item.transaction_date, item]));
   const defaultTime = compactTime(now);
 
@@ -157,6 +159,7 @@ export function buildDashboardViewModel({
       defaultTime,
       selectedDate: compactDate(activeDate)
     }),
+    categoryHistory,
     isAdmin: isAdminUsername(telegramUsername || user.username),
     telegramUserId: telegramUserId || user.telegram_id,
     telegramName: telegramName || user.first_name || "Mening hisobim",

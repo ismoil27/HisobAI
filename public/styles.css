@@ -294,6 +294,26 @@ label span,
   font-size: 14px;
 }
 
+.entry-form select {
+  width: 100%;
+  border-radius: 11px;
+  border: 1px solid var(--line);
+  background: var(--surface-3);
+  color: var(--text);
+  padding: 9px 10px;
+  font-size: 13px;
+}
+
+.entry-form select:disabled {
+  opacity: 0.6;
+}
+
+.category-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 140px;
+  gap: 7px;
+}
+
 .type-option input {
   display: none;
 }
@@ -756,7 +776,8 @@ label span,
   }
 
   .currency-field select,
-  .entry-form input {
+  .entry-form input,
+  .entry-form select {
     padding: 11px 12px;
     font-size: 14px;
   }
@@ -866,6 +887,10 @@ label span,
   .hero-actions,
   .form-grid-3,
   .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .category-row {
     grid-template-columns: 1fr;
   }
 
