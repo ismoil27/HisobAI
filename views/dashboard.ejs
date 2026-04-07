@@ -8,10 +8,10 @@
       (() => {
         try {
           const storedTheme = localStorage.getItem("hisobai-theme");
-          const theme = storedTheme === "light" || storedTheme === "dark" ? storedTheme : "dark";
+          const theme = storedTheme === "light" || storedTheme === "dark" ? storedTheme : "light";
           document.documentElement.setAttribute("data-theme", theme);
         } catch (_error) {
-          document.documentElement.setAttribute("data-theme", "dark");
+          document.documentElement.setAttribute("data-theme", "light");
         }
       })();
     </script>
