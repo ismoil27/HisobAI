@@ -390,6 +390,7 @@
           if (categoryInput) {
             categoryInput.required = true;
             categoryInput.readOnly = isIncome && !isCustomIncome;
+            categoryInput.dataset.mode = isIncome && !isCustomIncome ? "select" : "input";
             categoryInput.placeholder = isIncome
               ? (currentValue || "Kategoriya tanlang")
               : "Ovqat, Maosh, Yo'l, Qarz";
@@ -506,12 +507,21 @@
             syncDraft();
             closeCategoryMenu();
             if (isCustom && categoryInput) {
+              categoryInput.readOnly = false;
               categoryInput.focus();
+              categoryInput.setSelectionRange(0, 0);
+            }
+          });
+
+          categoryInput.addEventListener("click", (event) => {
+            if (getCurrentType() === "income" && categoryInput.dataset.mode === "select") {
+              event.preventDefault();
+              openCategoryMenu();
             }
           });
 
           categoryInput.addEventListener("focus", () => {
-            if (getCurrentType() === "income" && !incomeCustomMode) {
+            if (getCurrentType() === "income" && categoryInput.dataset.mode === "select") {
               openCategoryMenu();
               return;
             }

@@ -418,10 +418,15 @@ label span,
 .category-combo .select-like-input {
   cursor: pointer;
   color: #c8d0dc;
+  caret-color: transparent;
 }
 
 .category-combo .select-like-input::placeholder {
   color: #9ba6b5;
+}
+
+.category-combo .select-like-input:focus {
+  outline: none;
 }
 
 .category-toggle {
