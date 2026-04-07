@@ -157,14 +157,16 @@ label span,
 }
 
 .hero-stat {
-  display: inline-grid;
+  display: grid;
   gap: 4px;
-  width: fit-content;
+  width: 100%;
   margin-top: 8px;
   padding: 10px 12px;
   border-radius: 12px;
   border: 1px solid rgba(255, 157, 66, 0.22);
   background: rgba(255, 157, 66, 0.08);
+  justify-items: center;
+  text-align: center;
 }
 
 .hero-stat span {
@@ -365,11 +367,6 @@ label span,
 
 .inline-currency-form select {
   min-height: 44px;
-}
-
-.income-category-block {
-  display: grid;
-  gap: 7px;
 }
 
 .form-grid-3 {
