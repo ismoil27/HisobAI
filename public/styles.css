@@ -340,6 +340,7 @@ label span,
 
 .category-combo {
   position: relative;
+  overflow: visible;
 }
 
 .category-combo input {
@@ -361,6 +362,8 @@ label span,
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  z-index: 3;
+  pointer-events: auto;
 }
 
 .category-toggle:disabled {
@@ -388,6 +391,10 @@ label span,
   border: 1px solid var(--line);
   background: #202730;
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.34);
+}
+
+.category-menu[hidden] {
+  display: none !important;
 }
 
 .category-option,
