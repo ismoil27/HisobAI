@@ -45,18 +45,21 @@ input {
 }
 
 .toast-stack {
-  position: sticky;
-  top: 8px;
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 60;
   display: flex;
   justify-content: center;
   pointer-events: none;
-  margin-bottom: 8px;
+  width: min(92vw, 360px);
 }
 
 .toast-popup {
-  min-width: 180px;
-  max-width: min(92vw, 360px);
+  width: 100%;
+  min-width: 0;
+  max-width: none;
   padding: 10px 14px;
   border-radius: 14px;
   border: 1px solid rgba(99, 213, 122, 0.22);
@@ -73,7 +76,7 @@ input {
 
 .toast-hide {
   opacity: 0;
-  transform: translateY(-8px);
+  transform: translateY(-10px);
 }
 
 .surface {
