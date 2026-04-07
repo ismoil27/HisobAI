@@ -7,7 +7,10 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
@@ -23,8 +26,18 @@
             <div class="title-row">
               <h1><%= viewMode === "month" ? monthLabel : selectedDateLabel %></h1>
               <div class="header-pills">
-                <a class="ghost-btn icon-pill <%= viewMode === "today" ? "active-toggle" : "" %>" href="/?view=today&month=<%= currentMonth %>&date=<%= todayDate %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>" title="Bugun" aria-label="Bugun">&#128197;</a>
-                <a class="ghost-btn icon-pill <%= viewMode === "month" ? "active-toggle" : "" %>" href="/?view=month&month=<%= currentMonth %>&date=<%= selectedDate %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>" title="To'liq oy" aria-label="To'liq oy">&#128467;</a>
+                <a
+                  class="ghost-btn icon-pill <%= viewMode === "today" ? "active-toggle" : "" %>"
+                  href="/?view=today&month=<%= currentMonth %>&date=<%= todayDate %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>"
+                  title="Bugun"
+                  aria-label="Bugun"
+                >&#128197;</a>
+                <a
+                  class="ghost-btn icon-pill <%= viewMode === "month" ? "active-toggle" : "" %>"
+                  href="/?view=month&month=<%= currentMonth %>&date=<%= selectedDate %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>"
+                  title="To'liq oy"
+                  aria-label="To'liq oy"
+                >&#128467;</a>
                 <% if (isAdmin) { %>
                   <a class="name-pill admin-pill icon-pill" href="/admin?tgUsername=<%= telegramUsername %>" title="Admin" aria-label="Admin">&#128202;</a>
                 <% } else { %>
@@ -59,7 +72,76 @@
         </form>
       </section>
 
-      <section class="content-grid month-form-grid">
+      <% if (viewMode === "month") { %>
+        <section class="surface calendar-surface calendar-priority-surface calendar-expanded">
+          <div class="surface-header">
+            <a
+              href="/?view=<%= viewMode %>&month=<%= previousMonth %>&date=<%= selectedDate %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>"
+              class="month-btn"
+              aria-label="Oldingi oy"
+            >&lsaquo;</a>
+            <div class="surface-title-wrap">
+              <h2><%= monthLabel %></h2>
+              <p>To'liq oy sanalari va kunlik faollik.</p>
+            </div>
+            <a
+              href="/?view=<%= viewMode %>&month=<%= nextMonth %>&date=<%= selectedDate %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>"
+              class="month-btn"
+              aria-label="Keyingi oy"
+            >&rsaquo;</a>
+          </div>
+
+          <div class="calendar-focus-row">
+            <div class="calendar-focus-pill">
+              <span>Tanlangan kun</span>
+              <strong><%= selectedDateLabel %></strong>
+            </div>
+            <div class="calendar-focus-pill">
+              <span>Yozuvlar</span>
+              <strong><%= entries.length %> ta</strong>
+            </div>
+          </div>
+
+          <div class="legend">
+            <span><i class="dot income"></i> Tushum</span>
+            <span><i class="dot expense"></i> Xarajat</span>
+            <span><i class="dot debt"></i> Qarz</span>
+          </div>
+
+          <div class="weekday-row">
+            <% weekdayLabels.forEach((label) => { %>
+              <span><%= label %></span>
+            <% }) %>
+          </div>
+
+          <div class="calendar-grid">
+            <% calendarWeeks.forEach((week) => { %>
+              <% week.forEach((day) => { %>
+                <% if (!day) { %>
+                  <div class="calendar-cell empty"></div>
+                <% } else { %>
+                  <a
+                    href="/?view=<%= viewMode %>&month=<%= currentMonth %>&date=<%= day.isoDate %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>"
+                    class="calendar-cell <%= day.isSelected ? "selected" : "" %> <%= day.isToday ? "today" : "" %>"
+                  >
+                    <span class="day-number"><%= day.dayNumber %></span>
+                    <% if (day.expenseTotal > 0) { %>
+                      <span class="day-amount"><%= formatMoney(day.expenseTotal) %></span>
+                    <% } %>
+                    <span class="day-dots">
+                      <% if (day.hasIncome) { %><i class="dot income"></i><% } %>
+                      <% if (day.hasExpense) { %><i class="dot expense"></i><% } %>
+                      <% if (day.hasDebt) { %><i class="dot debt"></i><% } %>
+                    </span>
+                  </a>
+                <% } %>
+              <% }) %>
+            <% }) %>
+          </div>
+        </section>
+      <% } %>
+
+      <section class="content-grid month-form-grid <%= viewMode === "month" ? "month-priority-grid" : "" %>">
         <section class="surface day-surface">
           <div class="surface-title-wrap compact-title">
             <% if (viewMode === "today") { %>
@@ -106,11 +188,12 @@
 
             <label>
               <span>Toifa</span>
-              <div class="category-row">
-                <input type="text" name="category" placeholder="Ovqat, Maosh, Yo'l, Qarz" value="<%= draftEntry.category %>" required data-draft-source="category" id="categoryInput" />
-                <select class="category-history-select" id="categoryHistorySelect" aria-label="Toifa tarixi">
-                  <option value="">Tarixdan tanlang</option>
-                </select>
+              <div class="category-combo" id="categoryCombo">
+                <input type="text" name="category" placeholder="Ovqat, Maosh, Yo'l, Qarz" value="<%= draftEntry.category %>" required data-draft-source="category" id="categoryInput" autocomplete="off" />
+                <button type="button" class="category-toggle" id="categoryToggle" aria-label="Toifa tarixini ochish" aria-expanded="false">
+                  <span class="category-toggle-icon">&#8964;</span>
+                </button>
+                <div class="category-menu" id="categoryMenu" hidden></div>
               </div>
             </label>
 
@@ -170,50 +253,63 @@
         </section>
       </section>
 
-      <section class="surface calendar-surface <%= viewMode === "month" ? "calendar-expanded" : "" %>">
-        <div class="surface-header">
-          <a href="/?view=<%= viewMode %>&month=<%= previousMonth %>&date=<%= selectedDate %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>" class="month-btn" aria-label="Oldingi oy">&lsaquo;</a>
-          <div class="surface-title-wrap">
-            <h2><%= monthLabel %></h2>
-            <p>To'liq oy sanalari va kunlik faollik.</p>
+      <% if (viewMode !== "month") { %>
+        <section class="surface calendar-surface">
+          <div class="surface-header">
+            <a
+              href="/?view=<%= viewMode %>&month=<%= previousMonth %>&date=<%= selectedDate %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>"
+              class="month-btn"
+              aria-label="Oldingi oy"
+            >&lsaquo;</a>
+            <div class="surface-title-wrap">
+              <h2><%= monthLabel %></h2>
+              <p>To'liq oy sanalari va kunlik faollik.</p>
+            </div>
+            <a
+              href="/?view=<%= viewMode %>&month=<%= nextMonth %>&date=<%= selectedDate %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>"
+              class="month-btn"
+              aria-label="Keyingi oy"
+            >&rsaquo;</a>
           </div>
-          <a href="/?view=<%= viewMode %>&month=<%= nextMonth %>&date=<%= selectedDate %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>" class="month-btn" aria-label="Keyingi oy">&rsaquo;</a>
-        </div>
 
-        <div class="legend">
-          <span><i class="dot income"></i> Tushum</span>
-          <span><i class="dot expense"></i> Xarajat</span>
-          <span><i class="dot debt"></i> Qarz</span>
-        </div>
+          <div class="legend">
+            <span><i class="dot income"></i> Tushum</span>
+            <span><i class="dot expense"></i> Xarajat</span>
+            <span><i class="dot debt"></i> Qarz</span>
+          </div>
 
-        <div class="weekday-row">
-          <% weekdayLabels.forEach((label) => { %>
-            <span><%= label %></span>
-          <% }) %>
-        </div>
-
-        <div class="calendar-grid">
-          <% calendarWeeks.forEach((week) => { %>
-            <% week.forEach((day) => { %>
-              <% if (!day) { %>
-                <div class="calendar-cell empty"></div>
-              <% } else { %>
-                <a href="/?view=<%= viewMode %>&month=<%= currentMonth %>&date=<%= day.isoDate %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>" class="calendar-cell <%= day.isSelected ? "selected" : "" %> <%= day.isToday ? "today" : "" %>">
-                  <span class="day-number"><%= day.dayNumber %></span>
-                  <% if (day.expenseTotal > 0) { %>
-                    <span class="day-amount"><%= formatMoney(day.expenseTotal) %></span>
-                  <% } %>
-                  <span class="day-dots">
-                    <% if (day.hasIncome) { %><i class="dot income"></i><% } %>
-                    <% if (day.hasExpense) { %><i class="dot expense"></i><% } %>
-                    <% if (day.hasDebt) { %><i class="dot debt"></i><% } %>
-                  </span>
-                </a>
-              <% } %>
+          <div class="weekday-row">
+            <% weekdayLabels.forEach((label) => { %>
+              <span><%= label %></span>
             <% }) %>
-          <% }) %>
-        </div>
-      </section>
+          </div>
+
+          <div class="calendar-grid">
+            <% calendarWeeks.forEach((week) => { %>
+              <% week.forEach((day) => { %>
+                <% if (!day) { %>
+                  <div class="calendar-cell empty"></div>
+                <% } else { %>
+                  <a
+                    href="/?view=<%= viewMode %>&month=<%= currentMonth %>&date=<%= day.isoDate %>&tgUserId=<%= telegramUserId %>&tgName=<%= encodeURIComponent(telegramName) %>&tgUsername=<%= telegramUsername %>"
+                    class="calendar-cell <%= day.isSelected ? "selected" : "" %> <%= day.isToday ? "today" : "" %>"
+                  >
+                    <span class="day-number"><%= day.dayNumber %></span>
+                    <% if (day.expenseTotal > 0) { %>
+                      <span class="day-amount"><%= formatMoney(day.expenseTotal) %></span>
+                    <% } %>
+                    <span class="day-dots">
+                      <% if (day.hasIncome) { %><i class="dot income"></i><% } %>
+                      <% if (day.hasExpense) { %><i class="dot expense"></i><% } %>
+                      <% if (day.hasDebt) { %><i class="dot debt"></i><% } %>
+                    </span>
+                  </a>
+                <% } %>
+              <% }) %>
+            <% }) %>
+          </div>
+        </section>
+      <% } %>
     </div>
 
     <script>
@@ -242,7 +338,10 @@
       const currencyForm = document.getElementById("currencyForm");
       const entryForm = document.getElementById("entryForm");
       const categoryInput = document.getElementById("categoryInput");
-      const categoryHistorySelect = document.getElementById("categoryHistorySelect");
+      const categoryToggle = document.getElementById("categoryToggle");
+      const categoryMenu = document.getElementById("categoryMenu");
+      const categoryCombo = document.getElementById("categoryCombo");
+
       if (currencyForm && entryForm) {
         const getCurrentType = () => {
           const checkedType = entryForm.querySelector('[data-draft-source="type"]:checked');
@@ -250,27 +349,50 @@
         };
 
         const renderCategoryHistory = () => {
-          if (!categoryHistorySelect) {
+          if (!categoryMenu) {
             return;
           }
 
           const currentType = getCurrentType();
           const items = Array.isArray(categoryHistory[currentType]) ? categoryHistory[currentType] : [];
           const currentValue = categoryInput ? categoryInput.value.trim() : "";
-          const options = ['<option value="">Tarixdan tanlang</option>'];
+          const filtered = currentValue
+            ? items.filter((item) => String(item.category || "").toLowerCase().includes(currentValue.toLowerCase()))
+            : items;
 
-          items.forEach((item) => {
-            const safeValue = String(item.category || "")
-              .replace(/&/g, "&amp;")
-              .replace(/</g, "&lt;")
-              .replace(/>/g, "&gt;")
-              .replace(/"/g, "&quot;");
-            const selected = currentValue && currentValue === item.category ? ' selected' : "";
-            options.push(`<option value="${safeValue}"${selected}>${safeValue}</option>`);
-          });
+          if (categoryToggle) {
+            categoryToggle.disabled = items.length === 0;
+          }
 
-          categoryHistorySelect.innerHTML = options.join("");
-          categoryHistorySelect.disabled = items.length === 0;
+          if (filtered.length === 0) {
+            categoryMenu.innerHTML = '<div class="category-empty">Tarix topilmadi</div>';
+            return;
+          }
+
+          categoryMenu.innerHTML = filtered
+            .map((item) => {
+              const label = String(item.category || "");
+              const activeClass = currentValue === label ? " active" : "";
+              return `<button type="button" class="category-option${activeClass}" data-category-value="${encodeURIComponent(label)}">${label}</button>`;
+            })
+            .join("");
+        };
+
+        const closeCategoryMenu = () => {
+          if (!categoryMenu || !categoryToggle) {
+            return;
+          }
+          categoryMenu.hidden = true;
+          categoryToggle.setAttribute("aria-expanded", "false");
+        };
+
+        const openCategoryMenu = () => {
+          if (!categoryMenu || !categoryToggle || categoryToggle.disabled) {
+            return;
+          }
+          renderCategoryHistory();
+          categoryMenu.hidden = false;
+          categoryToggle.setAttribute("aria-expanded", "true");
         };
 
         const syncDraft = () => {
@@ -288,11 +410,37 @@
           });
         };
 
-        if (categoryHistorySelect && categoryInput) {
-          categoryHistorySelect.addEventListener("change", () => {
-            if (categoryHistorySelect.value) {
-              categoryInput.value = categoryHistorySelect.value;
-              syncDraft();
+        if (categoryToggle && categoryMenu && categoryInput && categoryCombo) {
+          categoryToggle.addEventListener("click", () => {
+            if (categoryMenu.hidden) {
+              openCategoryMenu();
+            } else {
+              closeCategoryMenu();
+            }
+          });
+
+          categoryMenu.addEventListener("click", (event) => {
+            const option = event.target.closest("[data-category-value]");
+            if (!option) {
+              return;
+            }
+
+            categoryInput.value = decodeURIComponent(option.getAttribute("data-category-value") || "");
+            syncDraft();
+            closeCategoryMenu();
+          });
+
+          categoryInput.addEventListener("focus", renderCategoryHistory);
+          categoryInput.addEventListener("input", () => {
+            syncDraft();
+            if (!categoryMenu.hidden) {
+              renderCategoryHistory();
+            }
+          });
+
+          document.addEventListener("click", (event) => {
+            if (!categoryCombo.contains(event.target)) {
+              closeCategoryMenu();
             }
           });
         }
@@ -301,6 +449,7 @@
         entryForm.addEventListener("change", (event) => {
           if (event.target && event.target.name === "type") {
             renderCategoryHistory();
+            closeCategoryMenu();
           }
           syncDraft();
         });
