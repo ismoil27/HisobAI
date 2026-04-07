@@ -1,4 +1,4 @@
-const EXCHANGE_API_BASE = "https://api.frankfurter.app";
+const EXCHANGE_API_BASE = "https://api.frankfurter.dev";
 const CACHE_TTL_MS = 10 * 60 * 1000;
 const rateCache = new Map();
 
@@ -21,7 +21,7 @@ async function fetchRate(fromCurrency, toCurrency) {
     return cached.rate;
   }
 
-  const url = `${EXCHANGE_API_BASE}/latest?amount=1&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`;
+  const url = `${EXCHANGE_API_BASE}/v2/rates?base=${encodeURIComponent(from)}&quotes=${encodeURIComponent(to)}`;
   const response = await fetch(url, {
     headers: {
       Accept: "application/json"
@@ -33,7 +33,7 @@ async function fetchRate(fromCurrency, toCurrency) {
   }
 
   const payload = await response.json();
-  const rate = Number(payload?.rates?.[to]);
+  const rate = Number(Array.isArray(payload) ? payload[0]?.rate : payload?.rates?.[to]);
   if (!Number.isFinite(rate) || rate <= 0) {
     throw new Error("Exchange API returned an invalid rate.");
   }
