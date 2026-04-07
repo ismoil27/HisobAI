@@ -318,6 +318,14 @@
 
     <script>
       const categoryHistory = <%- JSON.stringify(categoryHistory || { expense: [], income: [], debt: [] }) %>;
+      const incomeCategoryPresets = [
+        "Oylik",
+        "Biznes",
+        "Qarzini berdi",
+        "Bonus",
+        "To'yona",
+        "Boshqa"
+      ];
 
       if (window.Telegram && window.Telegram.WebApp) {
         const app = window.Telegram.WebApp;
@@ -373,14 +381,29 @@
           }
 
           const currentType = getCurrentType();
-          const items = Array.isArray(categoryHistory[currentType]) ? categoryHistory[currentType] : [];
+          const historyItems = Array.isArray(categoryHistory[currentType]) ? categoryHistory[currentType] : [];
+          const presetItems =
+            currentType === "income"
+              ? incomeCategoryPresets.map((category) => ({
+                  category,
+                  isPreset: true
+                }))
+              : [];
+          const mergedItems = [...presetItems];
+
+          historyItems.forEach((item) => {
+            if (!mergedItems.some((existing) => existing.category === item.category)) {
+              mergedItems.push(item);
+            }
+          });
+
           const currentValue = categoryInput ? categoryInput.value.trim() : "";
           const filtered = currentValue
-            ? items.filter((item) => String(item.category || "").toLowerCase().includes(currentValue.toLowerCase()))
-            : items;
+            ? mergedItems.filter((item) => String(item.category || "").toLowerCase().includes(currentValue.toLowerCase()))
+            : mergedItems;
 
           if (categoryToggle) {
-            categoryToggle.disabled = items.length === 0;
+            categoryToggle.disabled = mergedItems.length === 0;
           }
 
           if (filtered.length === 0) {
@@ -392,7 +415,9 @@
             .map((item) => {
               const label = String(item.category || "");
               const activeClass = currentValue === label ? " active" : "";
-              return `<button type="button" class="category-option${activeClass}" data-category-value="${encodeURIComponent(label)}">${label}</button>`;
+              const customAttr = label === "Boshqa" ? ' data-category-custom="true"' : "";
+              const presetClass = item.isPreset ? " preset" : "";
+              return `<button type="button" class="category-option${activeClass}${presetClass}" data-category-value="${encodeURIComponent(label)}"${customAttr}>${label}</button>`;
             })
             .join("");
         };
@@ -455,9 +480,14 @@
               return;
             }
 
-            categoryInput.value = decodeURIComponent(option.getAttribute("data-category-value") || "");
+            const nextValue = decodeURIComponent(option.getAttribute("data-category-value") || "");
+            const isCustom = option.hasAttribute("data-category-custom");
+            categoryInput.value = isCustom ? "" : nextValue;
             syncDraft();
             closeCategoryMenu();
+            if (isCustom) {
+              categoryInput.focus();
+            }
           });
 
           categoryInput.addEventListener("focus", renderCategoryHistory);

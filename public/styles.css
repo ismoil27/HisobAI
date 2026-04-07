@@ -462,6 +462,10 @@ label span,
   background: rgba(45, 140, 255, 0.14);
 }
 
+.category-option.preset {
+  font-weight: 700;
+}
+
 .category-empty {
   color: var(--muted);
 }
