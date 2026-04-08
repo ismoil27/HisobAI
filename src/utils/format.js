@@ -24,25 +24,25 @@ export function formatMoney(amount, currency = "UZS") {
 export function formatCompactAmount(amount) {
   const numericAmount = Number(amount || 0);
   const absolute = Math.abs(numericAmount);
+  const sign = numericAmount < 0 ? "-" : "";
 
   if (absolute >= 1_000_000_000) {
-    return `${trimCompactNumber(numericAmount / 1_000_000_000)}b`;
+    return `${sign}${trimCompactNumber(absolute / 1_000_000_000)}b`;
   }
 
   if (absolute >= 1_000_000) {
-    return `${trimCompactNumber(numericAmount / 1_000_000)}m`;
+    return `${sign}${trimCompactNumber(absolute / 1_000_000)}m`;
   }
 
   if (absolute >= 1_000) {
-    return `${trimCompactNumber(numericAmount / 1_000)}k`;
+    return `${sign}${trimCompactNumber(absolute / 1_000)}k`;
   }
 
-  return String(Math.round(numericAmount));
+  return `${sign}${Math.round(absolute)}`;
 }
 
 function trimCompactNumber(value) {
-  const rounded = Number(value.toFixed(1));
-  return Number.isInteger(rounded) ? String(rounded) : String(rounded);
+  return String(Math.floor(value));
 }
 
 export function compactDate(date) {
