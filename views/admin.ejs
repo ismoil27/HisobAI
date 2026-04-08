@@ -63,19 +63,19 @@
             <div class="stats-grid month-stats">
               <div class="mini-stat income">
                 <span>Tushum</span>
-                <strong><%= formatMoney(selectedUser.monthSummary.current.income) %></strong>
+                <strong><%= formatMoney(selectedUser.monthSummary.current.income, selectedUser.currency || "UZS") %></strong>
               </div>
               <div class="mini-stat expense">
                 <span>Xarajat</span>
-                <strong><%= formatMoney(selectedUser.monthSummary.current.expense) %></strong>
+                <strong><%= formatMoney(selectedUser.monthSummary.current.expense, selectedUser.currency || "UZS") %></strong>
               </div>
               <div class="mini-stat debt">
                 <span>Qarz</span>
-                <strong><%= formatMoney(selectedUser.monthSummary.current.debt) %></strong>
+                <strong><%= formatMoney(selectedUser.monthSummary.current.debt, selectedUser.currency || "UZS") %></strong>
               </div>
               <div class="mini-stat balance">
                 <span>Balans</span>
-                <strong><%= formatMoney(selectedUser.monthSummary.current.income - selectedUser.monthSummary.current.expense - selectedUser.monthSummary.current.debt) %></strong>
+                <strong><%= formatMoney(selectedUser.monthSummary.current.income - selectedUser.monthSummary.current.expense - selectedUser.monthSummary.current.debt, selectedUser.currency || "UZS") %></strong>
               </div>
             </div>
 
@@ -96,7 +96,7 @@
                     </div>
                     <div class="entry-amount">
                       <span><%= entry.type === "expense" ? "Xarajat" : entry.type === "income" ? "Tushum" : "Qarz" %></span>
-                      <strong><%= formatMoney(entry.amount) %></strong>
+                      <strong><%= formatMoney(entry.converted_amount ?? entry.amount, selectedUser.currency || "UZS") %></strong>
                     </div>
                   </article>
                 <% }) %>

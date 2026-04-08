@@ -82,3 +82,21 @@ export async function convertTransactionsTotal(transactions, targetCurrency, fil
 
   return convertedTotal;
 }
+
+export async function convertTransactionRecord(record, targetCurrency) {
+  const convertedAmount = await convertAmount(
+    record.amount,
+    record.transaction_currency || targetCurrency || "UZS",
+    targetCurrency
+  );
+
+  return {
+    ...record,
+    converted_amount: convertedAmount,
+    display_currency: String(targetCurrency || "UZS").toUpperCase()
+  };
+}
+
+export async function convertTransactionRecords(records, targetCurrency) {
+  return Promise.all(records.map((record) => convertTransactionRecord(record, targetCurrency)));
+}

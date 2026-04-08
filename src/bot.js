@@ -8,6 +8,7 @@ import {
   getTransactionsByDate
 } from "./repositories/transactionRepository.js";
 import { buildSummaryMessage } from "./services/summaryService.js";
+import { convertTransactionRecords, convertTransactionsTotal } from "./services/exchangeRateService.js";
 import { addDateKeyboard, addTypeKeyboard, mainMenuKeyboard, summaryKeyboard, webAppReplyKeyboard } from "./keyboards/menu.js";
 import { buildCalendarKeyboard } from "./keyboards/calendar.js";
 import { compactDate, compactTime, formatMoney } from "./utils/format.js";

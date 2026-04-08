@@ -255,7 +255,7 @@
                   <div class="entry-side">
                     <div class="entry-amount">
                       <span><%= entry.type === "expense" ? "Xarajat" : entry.type === "income" ? "Tushum" : "Qarz" %></span>
-                      <strong><%= formatMoney(entry.amount) %></strong>
+                      <strong><%= formatMoney(entry.converted_amount ?? entry.amount) %></strong>
                     </div>
                     <div class="entry-actions">
                       <a

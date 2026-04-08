@@ -10,15 +10,14 @@ import {
   createTransaction,
   deleteTransaction,
   getCategoryHistoryByUser,
-  getDailyTotals,
   getLatestTransactionsByUser,
-  getMonthActivity,
   getTransactionById,
   getTransactionsByDate,
+  getTransactionsForRange,
   updateTransaction
 } from "../repositories/transactionRepository.js";
 import { getSummaryData } from "./summaryService.js";
-import { convertTransactionsTotal } from "./exchangeRateService.js";
+import { convertTransactionRecords, convertTransactionsTotal } from "./exchangeRateService.js";
 import { compactDate, compactTime, formatCompactAmount, formatMoney } from "../utils/format.js";
 import { dayjs, getUzbekMonthLabel, getUzbekWeekdays, monthBounds, parseDateInput } from "../utils/dates.js";
 
@@ -72,6 +71,33 @@ function buildDraftEntry({ editEntry, draftType, draftAmount, draftCategory, dra
   };
 }
 
+function buildConvertedActivityMap(transactions) {
+  const map = new Map();
+
+  for (const item of transactions) {
+    const key = item.transaction_date;
+    const existing = map.get(key) || {
+      transaction_date: key,
+      expense_total: 0,
+      income_total: 0,
+      debt_total: 0
+    };
+
+    const amount = Number(item.converted_amount || 0);
+    if (item.type === "expense") {
+      existing.expense_total += amount;
+    } else if (item.type === "income") {
+      existing.income_total += amount;
+    } else if (item.type === "debt") {
+      existing.debt_total += amount;
+    }
+
+    map.set(key, existing);
+  }
+
+  return map;
+}
+
 export async function buildDashboardViewModel({
   user,
   monthText,
@@ -91,15 +117,18 @@ export async function buildDashboardViewModel({
   const activeDate = parseDateInput(selectedDate || compactDate(now), user.timezone) || now.startOf("day");
   const month = dayjs.tz(monthText || activeDate.format("YYYY-MM"), "YYYY-MM", user.timezone).startOf("month");
   const monthData = monthBounds(month, user.timezone);
-  const activity = await getMonthActivity(user.id, compactDate(monthData.start), compactDate(monthData.end));
+  const monthTransactions = await getTransactionsForRange(user.id, compactDate(monthData.start), compactDate(monthData.end));
   const entries = await getTransactionsByDate(user.id, compactDate(activeDate));
   const todayEntries = await getTransactionsByDate(user.id, compactDate(now));
-  const todayTotals = await getDailyTotals(user.id, compactDate(now));
   const monthSummary = await getSummaryData(user.id, "month", user.timezone, user.currency || "UZS");
   const editEntry = editEntryId ? await getTransactionById(Number(editEntryId), user.id) : null;
   const categoryHistory = await getCategoryHistoryByUser(user.id);
-  const activityMap = new Map(activity.map((item) => [item.transaction_date, item]));
   const defaultTime = compactTime(now);
+  const targetCurrency = user.currency || "UZS";
+  const convertedEntries = await convertTransactionRecords(entries, targetCurrency);
+  const convertedTodayEntries = await convertTransactionRecords(todayEntries, targetCurrency);
+  const convertedMonthTransactions = await convertTransactionRecords(monthTransactions, targetCurrency);
+  const activityMap = buildConvertedActivityMap(convertedMonthTransactions);
 
   const firstWeekday = (Number(monthData.start.format("d")) + 6) % 7;
   const daysInMonth = monthData.end.date();
@@ -138,16 +167,11 @@ export async function buildDashboardViewModel({
     weeks.push(row);
   }
 
-  let convertedTodayExpense = Number(todayTotals.expense_total || 0);
-  try {
-    convertedTodayExpense = await convertTransactionsTotal(
-      todayEntries,
-      user.currency || "UZS",
-      (item) => item.type === "expense"
-    );
-  } catch (_error) {
-    convertedTodayExpense = Number(todayTotals.expense_total || 0);
-  }
+  const todayTotals = {
+    expense: await convertTransactionsTotal(todayEntries, targetCurrency, (item) => item.type === "expense"),
+    income: await convertTransactionsTotal(todayEntries, targetCurrency, (item) => item.type === "income"),
+    debt: await convertTransactionsTotal(todayEntries, targetCurrency, (item) => item.type === "debt")
+  };
 
   return {
     viewMode: viewMode === "month" ? "month" : "today",
@@ -162,11 +186,11 @@ export async function buildDashboardViewModel({
     currentTimeLabel: now.format("HH:mm"),
     calendarWeeks: weeks,
     weekdayLabels: getUzbekWeekdays(),
-    entries,
+    entries: convertedEntries,
     todayTotals: {
-      expense: convertedTodayExpense,
-      income: Number(todayTotals.income_total || 0),
-      debt: Number(todayTotals.debt_total || 0)
+      expense: todayTotals.expense,
+      income: todayTotals.income,
+      debt: todayTotals.debt
     },
     monthSummary,
     editEntry,
@@ -202,10 +226,11 @@ export async function buildAdminViewModel({ viewerUsername, selectedUserId }) {
   const userCards = await Promise.all(users.map(async (user) => {
     const monthSummary = await getSummaryData(user.id, "month", user.timezone, user.currency || "UZS");
     const latestEntries = await getLatestTransactionsByUser(user.id, 8);
+    const convertedLatestEntries = await convertTransactionRecords(latestEntries, user.currency || "UZS");
     return {
       ...user,
       monthSummary,
-      latestEntries
+      latestEntries: convertedLatestEntries
     };
   }));
 

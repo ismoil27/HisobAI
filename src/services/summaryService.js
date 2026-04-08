@@ -2,8 +2,9 @@ import { getTransactionsForRange } from "../repositories/transactionRepository.j
 import { formatMoney } from "../utils/format.js";
 import { compactDate } from "../utils/format.js";
 import { summaryBounds } from "../utils/dates.js";
+import { convertAmount } from "./exchangeRateService.js";
 
-export function aggregateTransactions(transactions) {
+export async function aggregateTransactions(transactions, currency = "UZS") {
   const totals = {
     expense: 0,
     income: 0,
@@ -12,16 +13,22 @@ export function aggregateTransactions(transactions) {
   };
 
   for (const item of transactions) {
+    const convertedAmount = await convertAmount(
+      item.amount,
+      item.transaction_currency || currency,
+      currency
+    );
+
     if (item.type === "expense") {
-      totals.expense += Number(item.amount);
+      totals.expense += convertedAmount;
     } else if (item.type === "debt") {
-      totals.debt += Number(item.amount);
+      totals.debt += convertedAmount;
     } else {
-      totals.income += Number(item.amount);
+      totals.income += convertedAmount;
     }
 
     const current = totals.categories.get(item.category) || 0;
-    totals.categories.set(item.category, current + Number(item.amount));
+    totals.categories.set(item.category, current + convertedAmount);
   }
 
   return totals;
@@ -70,8 +77,8 @@ export async function getSummaryData(userId, kind, timezoneName, currency = "UZS
     compactDate(bounds.previous.end)
   );
 
-  const current = aggregateTransactions(currentTransactions);
-  const previous = aggregateTransactions(previousTransactions);
+  const current = await aggregateTransactions(currentTransactions, currency);
+  const previous = await aggregateTransactions(previousTransactions, currency);
   const comparison = buildComparisonText(
     current.expense,
     previous.expense,
