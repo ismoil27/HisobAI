@@ -9,5 +9,10 @@ export default defineConfig({
       "/api": "http://localhost:3003",
       "/assets": "http://localhost:3003"
     }
+  },
+  preview: {
+    host: "0.0.0.0",
+    port: 3000,
+    allowedHosts: true
   }
 });
