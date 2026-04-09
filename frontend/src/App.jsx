@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Routes, Route, useNavigate, useSearchParams } from "react-router-dom";
 
 const currencies = ["UZS", "USD", "KRW", "RUB", "EUR"];
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
 
 function getTelegramContext() {
   const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
@@ -41,7 +42,7 @@ function formatCompactAmount(amount) {
 }
 
 async function apiRequest(path, options = {}) {
-  const response = await fetch(path, {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
     headers: {
       "Content-Type": "application/json",
       ...(options.headers || {})
